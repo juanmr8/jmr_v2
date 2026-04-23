@@ -1,7 +1,7 @@
 const NOTION_API_URL = "https://api.notion.com/v1/pages";
 const NOTION_VERSION = "2022-06-28";
-const TITLE_PROPERTY_NAME = "Name";
-const DATE_PROPERTY_NAME = "Date";
+const DEFAULT_TITLE_PROPERTY_NAME = "Name";
+const DEFAULT_DATE_PROPERTY_NAME = "Date";
 const MAX_RICH_TEXT_LENGTH = 2000;
 const MAX_CHILDREN_BLOCKS = 100;
 
@@ -58,6 +58,9 @@ export async function savePocketNoteToNotion({
 }): Promise<Record<string, unknown>> {
   const notionToken = process.env.NOTION_TOKEN;
   const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+  const titlePropertyName =
+    process.env.NOTION_TITLE_PROPERTY_NAME || DEFAULT_TITLE_PROPERTY_NAME;
+  const datePropertyName = process.env.NOTION_DATE_PROPERTY_NAME || DEFAULT_DATE_PROPERTY_NAME;
 
   if (!notionToken || !notionDatabaseId) {
     throw new Error("Missing NOTION_TOKEN or NOTION_DATABASE_ID environment variables.");
@@ -75,7 +78,7 @@ export async function savePocketNoteToNotion({
         database_id: notionDatabaseId,
       },
       properties: {
-        [TITLE_PROPERTY_NAME]: {
+        [titlePropertyName]: {
           title: [
             {
               text: {
@@ -84,7 +87,7 @@ export async function savePocketNoteToNotion({
             },
           ],
         },
-        [DATE_PROPERTY_NAME]: {
+        [datePropertyName]: {
           date: {
             start: createdAt || new Date().toISOString(),
           },
