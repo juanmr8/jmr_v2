@@ -1,26 +1,178 @@
 @import "tailwindcss";
 
+/* ─── Tailwind Color Tokens ─────────────────────────────── */
+@theme {
+  --color-bg:      #080808;
+  --color-surface: #111111;
+  --color-border:  #222222;
+  --color-muted:   #555555;
+  --color-ink:     #eeeeee;
+  --color-accent:  #d4ff5a;
+  --font-sans:     var(--font-geist-sans);
+  --font-mono:     var(--font-geist-mono);
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESET
+   font: inherit forces every element (button, input, h1…)
+   to inherit the font set on html/body. No more browser
+   default font-size overrides sneaking in.
+════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+/* ════════════════════════════════════════════════════════════
+   --vw  ·  width-relative design pixel
+   ─────────────────────────────────────────────────────────
+   canvas: 1440 desktop  ·  390 mobile
+   calc(var(--vw) * 80) = "80px as drawn on the canvas"
+   Scales smoothly as viewport width changes.
+════════════════════════════════════════════════════════════ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --d: 1440;
+  --m: 390;
+  --vw: calc(100vw / var(--d));
+}
+@media (max-width: 600px) {
+  :root { --vw: calc(100vw / var(--m)); }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ════════════════════════════════════════════════════════════
+   --vr  ·  aspect-ratio-aware unit  (like object-fit: contain)
+   ─────────────────────────────────────────────────────────
+   Tracks whichever viewport axis is the tightest fit.
+   Canvas ratio: 1440 × 900
+   Magic numbers:  100 ÷  900 = 0.1111  (height case)
+                   100 ÷ 1440 = 0.0694  (width case)
+   Use for: display type, full-bleed sections, anything that
+   must feel proportional to the whole screen, not just width.
+════════════════════════════════════════════════════════════ */
+@media (min-aspect-ratio: 1440/900) {
+  :root { --vr: 0.1111svh; }  /* wider than canvas  → height constrains */
+}
+@media (max-aspect-ratio: 1440/900) {
+  :root { --vr: 0.0694vw; }   /* taller than canvas → width constrains  */
+}
+/* Mobile canvas: 390 × 844  |  100÷844=0.1185  |  100÷390=0.2564 */
+@media (max-width: 600px) and (min-aspect-ratio: 390/844) {
+  :root { --vr: 0.1185svh; }  /* mobile landscape */
+}
+@media (max-width: 600px) and (max-aspect-ratio: 390/844) {
+  :root { --vr: 0.2564vw; }   /* mobile portrait  */
 }
 
-@media (prefers-color-scheme: dark) {
+/* ════════════════════════════════════════════════════════════
+   --vf  ·  fixed unit  (always 1px, never scales)
+   ─────────────────────────────────────────────────────────
+   Use for: body text, labels, captions — anything that must
+   stay legible regardless of viewport size or shape.
+════════════════════════════════════════════════════════════ */
+:root { --vf: 1px; }
+
+/* ════════════════════════════════════════════════════════════
+   GRID SYSTEM
+   ─────────────────────────────────────────────────────────
+   All numbers are design-canvas pixels (× --vw to get fluid px).
+   --col  gives the fluid width of one column.
+   To span N cols:  calc(var(--col) * N + var(--gutter) * (N-1))
+════════════════════════════════════════════════════════════ */
+:root {
+  --col-l:   12;
+  --marge-x: calc(var(--vw) * 80);           /* outer page margin */
+  --gutter:  calc(var(--vw) * 24);           /* column gap        */
+  --area:    calc(100vw - var(--marge-x) * 2);
+  --col:     calc((var(--area) - var(--gutter) * (var(--col-l) - 1)) / var(--col-l));
+}
+@media (max-width: 600px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --col-l:   4;
+    --marge-x: calc(var(--vw) * 20);
+    --gutter:  calc(var(--vw) * 16);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ════════════════════════════════════════════════════════════
+   TYPE SCALE  ·  unitless numbers, applied at point of use
+   ─────────────────────────────────────────────────────────
+   Fluid  (× --vr) → proportional to the viewport composition
+   Fixed  (× --vf) → constant pixel size, always legible
+════════════════════════════════════════════════════════════ */
+:root {
+  /* — fluid — */
+  --display-f: 120;  --display-l: 112;
+  --heading-f:  56;  --heading-l:  60;
+  --subhead-f:  32;  --subhead-l:  36;
+
+  /* — fixed — */
+  --body-f:     18;  --body-l:     28;
+  --small-f:    14;  --small-l:    22;
+  --label-f:    11;  --label-l:    16;
+}
+@media (max-width: 600px) {
+  :root {
+    --display-f: 64;  --display-l: 60;
+    --heading-f: 36;  --heading-l: 40;
+    --subhead-f: 24;  --subhead-l: 28;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   TYPOGRAPHY CLASSES
+════════════════════════════════════════════════════════════ */
+
+/* Fluid — scaled by --vr */
+.t-display {
+  font-size:   calc(var(--display-f) * var(--vr));
+  line-height: calc(var(--display-l) * var(--vr));
+}
+.t-heading {
+  font-size:   calc(var(--heading-f) * var(--vr));
+  line-height: calc(var(--heading-l) * var(--vr));
+}
+.t-subhead {
+  font-size:   calc(var(--subhead-f) * var(--vr));
+  line-height: calc(var(--subhead-l) * var(--vr));
+}
+
+/* Fixed — scaled by --vf (1px) */
+.t-body {
+  font-size:   calc(var(--body-f) * var(--vf));
+  line-height: calc(var(--body-l) * var(--vf));
+}
+.t-small {
+  font-size:   calc(var(--small-f) * var(--vf));
+  line-height: calc(var(--small-l) * var(--vf));
+}
+.t-label {
+  font-size:      calc(var(--label-f) * var(--vf));
+  line-height:    calc(var(--label-l) * var(--vf));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BASE
+════════════════════════════════════════════════════════════ */
+html {
+  background:  var(--color-bg);
+  color:       var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ════════════════════════════════════════════════════════════
+   LAYOUT UTILITIES
+════════════════════════════════════════════════════════════ */
+.container {
+  padding-left:  var(--marge-x);
+  padding-right: var(--marge-x);
+}
+
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--col-l), var(--col));
+  column-gap: var(--gutter);
 }
