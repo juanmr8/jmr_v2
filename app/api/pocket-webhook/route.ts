@@ -1,10 +1,12 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { savePocketNoteToNotion } from "@/lib/notion";
+import { NOTE_TEMPLATES, NoteType, getNotionDatabaseId } from "@/lib/pocket-note-types";
 
 const POCKET_EVENT = "summary.completed";
 const ANTHROPIC_MODEL = "claude-opus-4-5";
 const DEBUG_WEBHOOK = process.env.POCKET_WEBHOOK_DEBUG === "true";
+const POCKET_SUMMARY_WAIT_MS = Number.parseInt(process.env.POCKET_SUMMARY_WAIT_MS ?? "20000", 10);
 
 type PocketTranscriptEntry = {
   speaker?: string;
@@ -114,6 +116,69 @@ function formatTranscript(transcript: PocketTranscriptEntry[] = []): string {
     .join("\n");
 }
 
+function extractFirstSentence(transcript: PocketTranscriptEntry[]): string {
+  const firstText = transcript[0]?.text?.trim() ?? "";
+  const match = firstText.match(/^.{10,200}?[.?!]/);
+  return match ? match[0] : firstText.slice(0, 200);
+}
+
+function buildClassificationMenu(): string {
+  return Object.entries(NOTE_TEMPLATES)
+    .map(([key, template]) => `- **${key}** (${template.label}): ${template.signals}`)
+    .join("\n");
+}
+
+function buildSectionInstructions(type: NoteType): string {
+  const template = NOTE_TEMPLATES[type] ?? NOTE_TEMPLATES.general;
+  const allSections = [...template.sections, "## Raw transcript"];
+  return allSections
+    .map((section) => {
+      const guidance = template.sectionGuidance?.[section];
+      return guidance ? `${section}\n  -> ${guidance}` : section;
+    })
+    .join("\n");
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function parseClaudeOutput(raw: string): { noteType: NoteType; markdown: string } {
+  const lines = raw.split("\n");
+  const scanWindow = Math.min(lines.length, 12);
+  let noteType: NoteType = "general";
+  let noteTypeLineIndex = -1;
+
+  for (let i = 0; i < scanWindow; i += 1) {
+    const line = lines[i]?.trim() ?? "";
+    // Accept strict and mildly formatted variants:
+    // NOTE_TYPE: course
+    // **NOTE_TYPE:** "course"
+    const match = line.match(/\**\s*NOTE_TYPE\s*:?\s*\**\s*["'`]?([a-z_]+)["'`]?\s*$/i);
+    if (!match) continue;
+
+    const candidate = match[1]?.toLowerCase() as NoteType | undefined;
+    if (candidate && candidate in NOTE_TEMPLATES) {
+      noteType = candidate;
+      noteTypeLineIndex = i;
+      break;
+    }
+  }
+
+  const markdownStartIndex = noteTypeLineIndex >= 0 ? noteTypeLineIndex + 1 : 0;
+  const markdown = lines.slice(markdownStartIndex).join("\n").trim();
+
+  if (DEBUG_WEBHOOK && noteType === "general") {
+    console.warn("[pocket-webhook] Falling back to general note type", {
+      preview: lines.slice(0, 5).join("\n"),
+    });
+  }
+
+  return { noteType, markdown };
+}
+
 async function generateStructuredMarkdown({
   title,
   summaryMarkdown,
@@ -122,35 +187,61 @@ async function generateStructuredMarkdown({
   title: string;
   summaryMarkdown: string;
   transcript: PocketTranscriptEntry[];
-}): Promise<string> {
+}): Promise<{ noteType: NoteType; markdown: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error("Missing ANTHROPIC_API_KEY environment variable.");
   }
 
   const anthropic = new Anthropic({ apiKey });
+  const firstSentence = extractFirstSentence(transcript);
   const prompt = [
-    "You are processing a voice note.",
-    "Use the provided Pocket summary and transcript to produce structured markdown.",
-    "Classify the note type in the Summary section (for example: meeting notes, personal reminder, idea dump, journal, task review).",
-    "Output exactly these top-level sections in this order:",
-    "## Summary",
-    "## Key points",
-    "## Action items",
-    "## Pocket summary",
-    "## Raw transcript",
+    "You are processing a voice note. Complete both parts below.",
     "",
-    "Use concise, useful bullets for Key points and Action items.",
-    "If no action items exist, explicitly write '- None.' under Action items.",
-    "Under Pocket summary, include the Pocket summary content faithfully with only light cleanup.",
-    "For Raw transcript, preserve the speaker/time ordering and keep it faithful.",
+    "--------------------------------",
+    "PART 1 - CLASSIFY",
+    "--------------------------------",
     "",
-    `Recording title: ${title || "Untitled recording"}`,
+    "Choose one note type based on the title and first sentence.",
+    "Available types:",
     "",
-    "Pocket summary markdown:",
+    buildClassificationMenu(),
+    "",
+    `Title: "${title || "Untitled recording"}"`,
+    `First sentence: "${firstSentence}"`,
+    "",
+    "Output your choice on the very first line of your response, exactly as:",
+    "NOTE_TYPE: <type_key>",
+    "(No other text on that line.)",
+    "",
+    "--------------------------------",
+    "PART 2 - WRITE THE NOTE",
+    "--------------------------------",
+    "",
+    "After the NOTE_TYPE line, write the structured note.",
+    "Use the section list for your chosen type (shown below).",
+    "Follow the order exactly. Do not add, rename, or merge sections.",
+    "",
+    "Rules:",
+    "- Tight, useful bullets. No filler or padding.",
+    "- Empty section? Write '- None.' - never skip the header.",
+    "- Under '## Raw transcript': preserve speaker/time ordering faithfully.",
+    "- The Pocket summary below is INPUT CONTEXT only - do not output it as a section.",
+    "",
+    "Section lists by type:",
+    ...Object.entries(NOTE_TEMPLATES).map(([key]) => {
+      const sections = buildSectionInstructions(key as NoteType).replace(/\n/g, " | ");
+      return `  ${key}: ${sections}`;
+    }),
+    "",
+    "--------------------------------",
+    "INPUT DATA",
+    "--------------------------------",
+    "",
+    "Pocket summary (context only):",
     summaryMarkdown || "No Pocket summary available.",
     "",
-    "Transcript:",
+    "Full transcript:",
     formatTranscript(transcript),
   ].join("\n");
 
@@ -171,7 +262,7 @@ async function generateStructuredMarkdown({
     throw new Error("Claude returned an empty response.");
   }
 
-  return textContent;
+  return parseClaudeOutput(textContent);
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -226,15 +317,24 @@ export async function POST(request: Request): Promise<Response> {
       ? new Date(recording.createdAt).toISOString()
       : new Date().toISOString();
     const transcript = Array.isArray(payload?.transcript) ? payload.transcript : [];
-    const summaryMarkdown = getPocketMarkdownSummary(payload);
+    let summaryMarkdown = getPocketMarkdownSummary(payload);
+    if (!summaryMarkdown && POCKET_SUMMARY_WAIT_MS > 0) {
+      // Pocket can emit webhook events before summary is consistently present.
+      // Delay processing briefly to improve odds in eventual consistency scenarios.
+      await sleep(POCKET_SUMMARY_WAIT_MS);
+      summaryMarkdown = getPocketMarkdownSummary(payload);
+    }
 
+    let noteType: NoteType = "general";
     let structuredMarkdown: string;
     try {
-      structuredMarkdown = await generateStructuredMarkdown({
+      const generated = await generateStructuredMarkdown({
         title,
         summaryMarkdown,
         transcript,
       });
+      noteType = generated.noteType;
+      structuredMarkdown = generated.markdown;
     } catch (error) {
       console.error("[pocket-webhook] Claude request failed", {
         requestId,
@@ -243,11 +343,15 @@ export async function POST(request: Request): Promise<Response> {
       throw error;
     }
 
+    const notionDatabaseId = getNotionDatabaseId(noteType);
+    console.info("[pocket-webhook] Classified", { requestId, noteType, notionDatabaseId });
+
     try {
       await savePocketNoteToNotion({
         title,
         createdAt,
         markdown: structuredMarkdown,
+        notionDatabaseId,
       });
     } catch (error) {
       console.error("[pocket-webhook] Notion request failed", {

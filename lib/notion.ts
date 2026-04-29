@@ -8,19 +8,24 @@ export async function savePocketNoteToNotion({
   title,
   createdAt,
   markdown,
+  notionDatabaseId,
 }: {
   title: string;
   createdAt: string;
   markdown: string;
+  notionDatabaseId: string;
 }): Promise<Record<string, unknown>> {
   const notionToken = process.env.NOTION_TOKEN;
-  const notionDatabaseId = process.env.NOTION_DATABASE_ID;
   const titlePropertyName =
     process.env.NOTION_TITLE_PROPERTY_NAME || DEFAULT_TITLE_PROPERTY_NAME;
   const datePropertyName = process.env.NOTION_DATE_PROPERTY_NAME || DEFAULT_DATE_PROPERTY_NAME;
 
-  if (!notionToken || !notionDatabaseId) {
-    throw new Error("Missing NOTION_TOKEN or NOTION_DATABASE_ID environment variables.");
+  if (!notionToken) {
+    throw new Error("Missing NOTION_TOKEN environment variable.");
+  }
+
+  if (!notionDatabaseId) {
+    throw new Error("Missing Notion database ID for pocket note save.");
   }
 
   const normalizedMarkdown = (markdown || "").trim() || DEFAULT_MARKDOWN_FALLBACK;
