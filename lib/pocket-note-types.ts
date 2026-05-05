@@ -6,6 +6,7 @@ export type NoteType =
   | "journal"
   | "task_review"
   | "feedback"
+  | "web_analysis"
   | "general";
 
 export interface NoteTemplate {
@@ -103,6 +104,17 @@ export const NOTE_TEMPLATES: Record<NoteType, NoteTemplate> = {
       "## Decisions or direction changes":
         "Only include things that represent a shift from the previous direction - not observations or opinions.",
       "## Next actions": "Format as '- [ ] action - owner if mentioned'. One per bullet.",
+    },
+  },
+  web_analysis: {
+    label: "Web Analysis",
+    signals: "website, webpage, web page, URL, site, analyzing a site, browsing, looking at a site, page layout, landing page, web app",
+    sections: ["## Elements", "## Observations"],
+    sectionGuidance: {
+      "## Elements":
+        "List each concrete element described (button, header, section, layout, feature, component, etc.) as a bullet point. One element per bullet. Do not include opinions or remarks here — only the elements themselves.",
+      "## Observations":
+        "List all other remarks, opinions, impressions, or notes as bullet points. Anything that isn't describing a specific element goes here.",
     },
   },
   general: {
