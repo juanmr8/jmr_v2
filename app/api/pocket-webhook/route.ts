@@ -130,8 +130,7 @@ function buildClassificationMenu(): string {
 
 function buildSectionInstructions(type: NoteType): string {
   const template = NOTE_TEMPLATES[type] ?? NOTE_TEMPLATES.general;
-  const allSections = [...template.sections, "## Raw transcript"];
-  return allSections
+  return template.sections
     .map((section) => {
       const guidance = template.sectionGuidance?.[section];
       return guidance ? `${section}\n  -> ${guidance}` : section;
@@ -225,7 +224,7 @@ async function generateStructuredMarkdown({
     "Rules:",
     "- Tight, useful bullets. No filler or padding.",
     "- Empty section? Write '- None.' - never skip the header.",
-    "- Under '## Raw transcript': preserve speaker/time ordering faithfully.",
+    "- Do not add a '## Raw transcript' section.",
     "- The Pocket summary below is INPUT CONTEXT only - do not output it as a section.",
     "",
     "Section lists by type:",
@@ -241,7 +240,7 @@ async function generateStructuredMarkdown({
     "Pocket summary (context only):",
     summaryMarkdown || "No Pocket summary available.",
     "",
-    "Full transcript:",
+    "Full transcript (context only):",
     formatTranscript(transcript),
   ].join("\n");
 
@@ -334,7 +333,8 @@ export async function POST(request: Request): Promise<Response> {
         transcript,
       });
       noteType = generated.noteType;
-      structuredMarkdown = generated.markdown;
+      const rawTranscriptSection = `## Raw transcript\n${formatTranscript(transcript)}`;
+      structuredMarkdown = `${generated.markdown.trim()}\n\n${rawTranscriptSection}`.trim();
     } catch (error) {
       console.error("[pocket-webhook] Claude request failed", {
         requestId,
