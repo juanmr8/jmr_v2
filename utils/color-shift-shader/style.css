@@ -1,0 +1,66 @@
+@font-face {
+  font-family: Heebo;
+  src: url(heebo.ttf);
+}
+
+body {
+	font-family: Heebo;
+	font-size: 24px;
+	line-height: 1.5;
+  font-variation-settings: "wght" 300;
+	
+	background-color: #ffffff;
+	color: #dc0000;
+	margin: 0 auto 0 auto;
+	max-width: 1600px;
+}
+
+section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  
+  width: 100%;
+  overflow: hidden;
+}
+
+div.shader, div.text {
+  margin: 32px;
+}
+
+div.text {
+  padding: 32px;
+}
+
+div.text h1 {
+  margin: 0 0 36px 0;
+}
+
+div.text p {
+  max-width: 30em;
+  margin: 24px auto 24px auto;
+}
+
+div.text a, div.text span {
+  font-variation-settings: "wght" 500;
+  color: #dc0000;
+}
+
+div.shader {
+  position: relative;
+}
+
+div.shader canvas {
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  right: -100px;
+  bottom: -100px;
+  width: calc(100% + 200px);
+  height: calc(100% + 200px);
+}
+
+div.shader.loaded img {
+  opacity: 0;
+}
