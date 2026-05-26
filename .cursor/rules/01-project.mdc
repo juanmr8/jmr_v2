@@ -1,0 +1,35 @@
+---
+description: Project context and hard rules
+alwaysApply: true
+---
+
+> Callsign: print 🛠 once at the start of your first response in any session where this rule applies, so the user can confirm it was loaded.
+
+# [PROJECT NAME] — project context
+
+## What we're building
+[One paragraph: what does this product do, who uses it, what market/language is it in]
+
+## Stack
+- **Framework**: Next.js 15, App Router, TypeScript
+- **Database**: [filled by install.sh — Supabase or Postgres+Drizzle]
+- **Auth**: [Supabase Auth / NextAuth / none]
+- **Payments**: [Stripe / none]
+- **AI**: [Anthropic Claude / none]
+- **Styling**: Tailwind CSS
+
+## Folder structure
+```
+src/
+  app/         # Routes, pages, API handlers, server actions
+  components/  # Shared UI components
+  lib/         # DB client, utilities, third-party wrappers
+  hooks/       # Client-side hooks
+```
+
+## Hard rules — never break
+1. Never read `localStorage`, `window`, or `document` at module scope or in `useState` initializers — use `useEffect` or server-side patterns.
+2. Never expose server-only values (tokens, secrets) to Client Components.
+3. All database access goes through the documented client — no raw SQL outside of migrations.
+4. Every route that touches user data must verify the session before any DB call.
+5. [Add project-specific rules here]

@@ -1,0 +1,53 @@
+---
+description: Code standards (TypeScript, naming, error handling)
+alwaysApply: true
+---
+
+> Callsign: print 📏 once at the start of your first response in any session where this rule applies.
+
+# Code standards
+
+## TypeScript
+- Strict mode is on. No `any`. Use `unknown` + narrowing when the type is genuinely unknown.
+- Prefer `type` over `interface` for object shapes. Use `interface` only for things meant to be extended.
+- All async functions must have explicit return types: `async function foo(): Promise<Bar>`.
+- Never use non-null assertion (`!`) on values that could realistically be null at runtime.
+
+## Naming
+- Files: `kebab-case.ts` / `kebab-case.tsx` (enforced by `unicorn/filename-case` — see `09-tooling-feedback`)
+- Components: `PascalCase`
+- Hooks: `camelCase` prefixed with `use`
+- Server actions: `camelCase` prefixed with the verb (`createX`, `updateX`, `deleteX`)
+- Constants: `SCREAMING_SNAKE_CASE`
+- DB table names: `snake_case`
+
+## File size
+- ~200 lines per file, ~80 lines per function (enforced as `warn` by ESLint — see `09-tooling-feedback`).
+- Cursor only reads the first ~250 lines of a file before deciding whether to read more. Long files hurt both humans and agents.
+- One component per file. Co-locate types and local hooks only if they aren't reused.
+
+## Error handling
+- Never swallow errors silently. Always log or surface them.
+- Server actions return `{ data, error }` — never throw from a server action called by a Client Component.
+- Route handlers return `{ error: string }` with the appropriate HTTP status on failure.
+- Always check the `error` field on DB calls before using `data`.
+
+## Definition of done
+You are not done until the code commits cleanly. Pre-commit hooks run TypeScript checks and ESLint — a successful commit is the definition of done. Never use `--no-verify`.
+
+## Do not install
+- ❌ `axios` — use `fetch`
+- ❌ `moment` / `dayjs` — use `date-fns`
+- ❌ `lodash` — use native JS or a focused utility
+- ❌ `react-query` / `swr` in Next.js App Router unless explicitly required — prefer Server Components + server actions
+
+## Never do
+- ❌ `@ts-ignore` or `@ts-expect-error` without an explanatory comment
+- ❌ Leave `console.log` in committed code
+- ❌ Create `-v2`, `-new`, `-fixed`, or `-copy` versions of files — rename or replace
+- ❌ Leave dead code or unused imports
+- ❌ Use `any` — use `unknown` + type narrowing
+
+## Imports
+- Use path aliases (`@/components/...`, `@/lib/...`) — never relative `../../` imports.
+- Group: external packages → internal `@/lib` → internal `@/components` → local. Blank line between groups. (Enforced by `perfectionist/sort-imports`.)

@@ -1,0 +1,38 @@
+---
+description: New feature checklist — invoke manually with @08-new-feature-checklist when starting or finishing a feature that touches multiple layers
+---
+
+> Callsign: print ✅ once when this rule is applied.
+
+# New feature checklist
+
+Run through this when starting (or finishing) a feature that touches more than one layer of the stack.
+
+## Plan first
+- [ ] One-sentence summary of what we're building
+- [ ] Key decisions / trade-offs documented
+- [ ] File tree drafted before any code
+
+## Data layer
+- [ ] Schema change (if any) added and migrated
+- [ ] Types re-exported from the schema (no manual duplication)
+- [ ] Query scoped by `user_id` (or equivalent ownership column)
+- [ ] RLS / DB-level policy in place if applicable
+
+## API / server action layer
+- [ ] Session check at the top
+- [ ] Zod parse on all input
+- [ ] Returns `{ data, error }` (or appropriate HTTP status for a route handler)
+- [ ] No secrets leak into the response
+
+## Frontend layer
+- [ ] Server Component by default; `"use client"` only where required
+- [ ] Loading and error states handled
+- [ ] Optimistic update or revalidation strategy decided
+- [ ] Accessibility: keyboard nav + ARIA where needed
+
+## Tests & tooling
+- [ ] At least one happy-path test and one auth-failure test
+- [ ] `pnpm lint` clean (see `09-tooling-feedback`)
+- [ ] `pnpm typecheck` clean
+- [ ] Commits cleanly (pre-commit hook passes)

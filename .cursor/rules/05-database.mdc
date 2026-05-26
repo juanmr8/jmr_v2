@@ -1,0 +1,95 @@
+---
+description: Database access via Drizzle ORM (Postgres)
+globs: src/lib/db/**, src/app/api/**, src/app/**/actions.ts, drizzle/**
+---
+
+> Callsign: print 🗄 once when this rule is applied.
+
+# Database — Drizzle (Postgres)
+
+Stack: Postgres + Drizzle ORM. Server-side queries called directly from Server Components and server actions; Client Components reach data through API routes only when interactivity demands it.
+
+## Drizzle client
+- Server-side only: import `db` from `src/lib/db/client.ts`.
+- Schema lives in `src/lib/db/schema.ts` (one file per table or grouped by domain).
+- Never import `db` or anything from `src/lib/db/` in a Client Component.
+- Never instantiate `postgres()` / `drizzle()` outside `src/lib/db/client.ts`.
+
+```ts
+// src/lib/db/client.ts
+import { drizzle } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import * as schema from "./schema"
+
+const client = postgres(process.env.DATABASE_URL!, { prepare: false })
+export const db = drizzle(client, { schema })
+```
+
+## Queries
+- Use Drizzle's query builder or the `db.query.*` relational API — never write raw SQL outside of migrations.
+- Select explicit columns: `.select({ id: posts.id, title: posts.title })` — never select the whole row by default.
+- Always scope by `userId` — Drizzle has no equivalent of RLS, ownership is your job.
+- For single-row lookups, return `null` when nothing matches — don't throw.
+- Wrap server-side fetches in `React.cache()` so the same query inside one request hits the DB once:
+
+```ts
+// src/lib/db/queries/posts.ts
+import { cache } from "react"
+import { and, eq } from "drizzle-orm"
+import { db } from "@/lib/db/client"
+import { posts } from "@/lib/db/schema"
+
+export const getPostById = cache(async (id: string, userId: string) => {
+  const [post] = await db
+    .select({ id: posts.id, title: posts.title, body: posts.body })
+    .from(posts)
+    .where(and(eq(posts.id, id), eq(posts.userId, userId)))
+    .limit(1)
+
+  return post ?? null
+})
+```
+
+## Data flow
+
+**Default (Server Component):**
+```
+Server Component
+  └─ getPostById()  (React.cache wrapped)
+       └─ Drizzle query
+            └─ Postgres
+```
+
+**When client interactivity requires it** (polling, infinite scroll, optimistic updates):
+```
+Client Component
+  └─ useQuery / useMutation hook (src/hooks/use-*.ts)
+       └─ fetch('/api/...')
+            └─ Route handler
+                 └─ Drizzle query
+```
+
+- One hook per resource × operation: `usePosts`, `usePost(id)`, `useCreatePost`, etc.
+- The hook owns cache invalidation — components stay declarative.
+- Parse the `{ data } | { error }` shape from `04-api`; throw on `!res.ok` so React Query surfaces the error.
+
+## Types
+Drizzle infers row types from the schema. Re-export them — never redefine.
+
+```ts
+// src/lib/db/types.ts
+import type { posts } from "./schema"
+
+export type Post = typeof posts.$inferSelect
+export type NewPost = typeof posts.$inferInsert
+```
+
+## Migrations
+- Managed by `drizzle-kit`. Config in `drizzle.config.ts`; migrations in `drizzle/`.
+- Edit `src/lib/db/schema.ts`, then:
+  ```bash
+  pnpm drizzle-kit generate   # writes a new SQL migration to drizzle/
+  pnpm drizzle-kit migrate    # applies pending migrations
+  ```
+- Never edit a generated migration by hand — change the schema and regenerate.
+- Never mutate the database directly in a GUI.

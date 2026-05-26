@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&display=swap');
+
+body {
+	font-family: IM Fell Great Primer;
+	font-size: 40px;
+  font-weight: 400;
+	line-height: 1.5;
+	
+	background-color: #fafdc7;
+	color: #000000;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 40px;
+  
+  display: flex;
+  justify-content: space-between;
+}
+
+nav {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  width: 100%;
+  
+  display: flex;
+  justify-content: space-between;
+}
+
+header span {
+  font-style: italic;
+  margin-right: 0.1em;
+}
+
+div.canvas-holder {
+  height: 100vh;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.canvas-holder canvas {
+  width: 60vmin;
+  height: 90vmin;
+}
+
+nav a {
+  font-style: italic;
+  text-decoration: none;
+  color: #888888;
+  transition: color 0.25s;
+  
+  padding: 40px;
+}
+
+nav a:hover {
+  color: #000000;
+}
+

@@ -1,0 +1,60 @@
+---
+description: Security patterns — auth, tokens, env vars, RLS, GDPR
+globs: src/app/api/**, src/app/**/actions.ts, src/app/**/actions/**, src/lib/**, src/middleware.ts
+---
+
+> Callsign: print 🔒 once when this rule is applied in a turn.
+
+# Security patterns
+
+## Authentication — mandatory checks
+Every server action and route handler that touches user data must verify the session **before** anything else.
+
+When using Supabase Auth, use `getUser()` not `getSession()` — the latter reads from a cookie without server verification.
+
+```ts
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return { data: null, error: 'Unauthenticated' }
+```
+
+## Authentication vs authorization
+- Authenticate first (is the user logged in?).
+- Authorize second (does this user own this resource?). Always filter DB queries by `user_id`.
+
+## Protecting server values
+Use `experimental_taintUniqueValue` when passing user objects through components you don't control:
+
+```ts
+import { experimental_taintUniqueValue } from 'react'
+
+const user = await getUser()
+experimental_taintUniqueValue('Do not pass token to client', user, user.token)
+```
+
+## Environment variables
+- `NEXT_PUBLIC_*` = exposed to the browser. Never put secrets here.
+- Everything else = server only.
+- Validate required env vars at startup in `src/lib/env.ts` using Zod. Throw at boot if a required var is missing.
+
+## Service role / admin keys
+Any "admin" key (e.g. `SUPABASE_SERVICE_ROLE_KEY`) bypasses row-level checks.
+- Only use in webhook handlers where no user session is available.
+- Never reference in any client-side file.
+- Never use when a session-scoped client would work.
+
+## Stripe / payments
+- Always verify webhook signatures before processing.
+- Never trust `amount` or `metadata` from a payment event without cross-referencing your own DB record.
+- Store the customer ID on the user — never create a duplicate customer.
+
+## File access
+- Private files: generate signed URLs server-side with a short TTL (max 60 seconds).
+- Never return a raw storage path to the client.
+- Verify ownership before generating the URL.
+
+## GDPR / consent
+- Tracking and analytics scripts only load after explicit consent.
+- Cookie consent state lives in `localStorage.cookie_consent`. Check before initialising any third-party script.
+
+## Defence in depth
+RLS / DB-level policies are the last line of defence — but always check ownership in the server action before the query too. Layered defence.

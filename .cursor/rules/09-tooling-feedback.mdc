@@ -1,0 +1,46 @@
+---
+description: Use lint / typecheck / pre-commit hooks as the feedback loop. The real enforcement of code quality lives in the toolchain, not in this rules file.
+alwaysApply: true
+---
+
+> Callsign: print 🔁 once at the start of your first response when this rule is applied.
+
+# Tooling as the feedback loop
+
+`.cursor/rules/*.mdc` files are a *soft* signal — the agent may forget, paraphrase, or override them. The **hard** enforcement of code quality lives in the toolchain: ESLint, TypeScript, Prettier, lint-staged, and pre-commit hooks. Treat those as the source of truth.
+
+## Mandatory workflow after edits
+After any non-trivial change, run:
+
+```bash
+pnpm lint && pnpm typecheck
+```
+
+Then fix what surfaces. **Never disable a lint rule or add `@ts-ignore` to make output green.** If a rule is genuinely wrong, raise it in the PR instead of silencing it.
+
+## What's wired up in this project
+Read `eslint.config.js` and `lint-staged.config.js` at repo root. The headline rules:
+
+- `unicorn/filename-case` (error) — all files are `kebab-case`.
+- `perfectionist/sort-imports` (error) — imports are auto-sorted.
+- `complexity`, `max-depth`, `max-lines`, `max-lines-per-function`, `max-params` (warn) — keep functions and files small enough that both humans and the agent can reason about them.
+- `no-console` (warn, except `console.warn` / `console.error`).
+
+The `warn` rules are intentional: they're guidance for humans but blockers for the agent. `lint-staged` runs lint on changed files only at commit time, so existing legacy files don't block contributors.
+
+## Why these size limits matter for the agent
+Cursor reads the **first ~250 lines** of a file before deciding whether to read more. A 600-line component means the agent is making changes with a partial picture. Keeping files under ~200 lines and functions under ~80 lines is partly a humans-reading-code thing and partly a feed-the-agent-the-full-context thing.
+
+## When you can't fix a lint error in-place
+If a violation is in legacy code you weren't asked to touch and the fix is risky:
+1. Note it in the PR description.
+2. Do **not** add `// eslint-disable` to make it green.
+3. Do not change unrelated files.
+
+## Pre-commit
+The `lint-staged` pre-commit hook runs:
+- ESLint with `--fix` on changed `.ts`/`.tsx`
+- Prettier on changed files
+- `tsc --noEmit` on the whole project (catches cross-file type breakage)
+
+A clean commit is the definition of done. Never bypass with `--no-verify`.

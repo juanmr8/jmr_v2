@@ -1,0 +1,67 @@
+---
+description: Frontend component and UI patterns
+globs: src/components/**, src/app/**/*.tsx
+---
+
+> Callsign: print 🎨 once when this rule is applied in a turn.
+
+# Frontend patterns
+
+## Component model
+- Prefer Server Components by default. Add `"use client"` only when you need interactivity, browser APIs, or React hooks.
+- Use named exports for components — no default exports.
+- Use plain function declarations, not `React.FC`.
+- Never use `React.cloneElement` or `React.Children.map` to pass data — use Context.
+- Never hardcode element IDs. Use `useId()` for stable, unique per-instance IDs.
+
+## SSR safety
+- Never read `localStorage`, `sessionStorage`, `document`, or `window` in render or in a `useState` initializer.
+- For values that must be set **before paint** (to avoid a flash), use an inline `<script dangerouslySetInnerHTML>` — `useEffect` runs after hydration and causes a visible flash.
+
+```tsx
+// ✅ No flash, no hydration mismatch
+function ThemeProvider({ children }: { children: ReactNode }) {
+  const id = useId()
+  return (
+    <>
+      <div id={id}>{children}</div>
+      <script dangerouslySetInnerHTML={{ __html: `
+        try {
+          const theme = localStorage.getItem('theme') || 'light'
+          document.getElementById('${id}').className = theme
+        } catch (e) {}
+      ` }} />
+    </>
+  )
+}
+```
+
+## Concurrent rendering
+- In Server Components, wrap repeated async data calls in `React.cache()` so the same request hits the DB once regardless of how many components call it.
+
+## Semantic persistence
+- Don't rely on `useMemo` for correctness — it's a performance hint, React may discard the cache.
+- Use `useState` (with the previous-value pattern) when a value must remain stable.
+
+## Portal / iframe safety
+- Components rendered via `createPortal` or inside iframes live in a different window. Use `ref.current.ownerDocument.defaultView` instead of `window` for event listeners.
+
+## View transitions (React 19)
+- State updates that should trigger `<ViewTransition>` animations must be wrapped in `startTransition()`.
+
+## Styling
+- Tailwind only — no inline `style` objects except for dynamic values Tailwind can't handle.
+- Mobile-first, responsive by default (`md:` / `lg:` for larger breakpoints).
+- When using a UI library, default to `shadcn/ui`.
+
+## Forms
+- Simple forms: `FormData` + Zod + `useActionState` (React 19 / Next.js 15).
+- Complex forms (async validation, field dependencies, masking): React Hook Form + `zodResolver`.
+
+## Never do
+- ❌ `React.cloneElement` / `React.Children.map`
+- ❌ Hardcoded element IDs (use `useId()`)
+- ❌ Inline style objects for static values
+- ❌ `useState` initializer reading from `localStorage` or `window`
+- ❌ Default exports for components
+- ❌ `React.FC`
