@@ -2,14 +2,18 @@
 
 /* ════════════════════════════════════════════════════════════
    GALLERY CANVAS · the client island.
-   Owns only the lifecycle around the renderer seam: mount the
-   <canvas>, measure the live pixel box and the grid's real
-   --gutter, drive the renderer on resize, tear down on unmount.
-   All drawing lives in renderer.ts — swap that, keep this.
+   Owns the lifecycle around the renderer seam and the DOM concerns
+   it must not see: mount the <canvas>, measure the live pixel box
+   and the grid's real --gutter, capture EVERY wheel event on the page
+   (the home view is locked to one full-height screen, so all scroll
+   drives the Gallery — never the document), forward those deltas to
+   the renderer, and push the settled Active index back into React.
+   All drawing/motion lives behind the seam.
 ════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef } from "react";
 import { createGalleryRenderer } from "./renderer";
+import { useGallery } from "./gallery-context";
 
 interface GalleryCanvasProps {
   /** One flat placeholder color per Plane, in Project order. */
@@ -19,13 +23,26 @@ interface GalleryCanvasProps {
 export function GalleryCanvas({ colors }: GalleryCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { setActive } = useGallery();
+
+  // Latest setter in a ref so the renderer effect never re-runs on re-render.
+  const onActiveChange = useRef(setActive);
+  onActiveChange.current = setActive;
 
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    const renderer = createGalleryRenderer({ canvas, colors });
+    const renderer = createGalleryRenderer({
+      canvas,
+      colors,
+      onActiveChange: (index) => {
+        // Slice 3 proves the Active index without binding the counter/rail yet.
+        console.debug("[gallery] active project:", index);
+        onActiveChange.current(index);
+      },
+    });
 
     // The 16px gutter is a fluid --vw unit, not proportional to the strip
     // height — so resolve its real px from the cascade with a 0-height probe
@@ -43,7 +60,20 @@ export function GalleryCanvas({ colors }: GalleryCanvasProps) {
     const observer = new ResizeObserver(sync);
     observer.observe(container);
 
+    // Capture is page-wide: the home view is a single full-height screen with
+    // nothing to scroll, so every wheel event belongs to the Gallery. Binding
+    // the window (not the strip) means scrolling anywhere drives it, and the
+    // preventDefault keeps the document pinned to that top view. Use whichever
+    // axis dominates (trackpads mostly emit deltaY).
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      renderer.input(delta);
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+
     return () => {
+      window.removeEventListener("wheel", onWheel);
       observer.disconnect();
       probe.remove();
       renderer.destroy();
