@@ -2,21 +2,31 @@
    GALLERY RENDERER · the swappable seam (BRD / ADR-0001).
    Pure OGL over a single <canvas>. No React, no Next, no DOM
    measurement — the caller hands us a canvas, the Plane colors,
-   and the live pixel box; we draw the static strip.
+   and (via input/resize) the live pixel box; we own the RAF loop.
 
-   Slice 2 is static: one Plane fills the leftmost Active Slot at
-   full height; every other Plane shares one uniform smaller scale;
-   16px gutter between them. No motion — we render once per resize.
-   Coordinates are CSS pixels (orthographic, center origin, +y up),
-   so "Active side = inner height" and "16px gutter" map 1:1.
+   This loop is the per-frame source of truth for Plane position &
+   scale (Slice 3). Scroll impulses feed momentum; momentum decays
+   then snaps so exactly one Plane fills the Active Slot. The only
+   thing that escapes per frame is nothing — the discrete Active
+   index is emitted ONCE on snap-settle via onActiveChange. The
+   geometry math is pure and lives in ./gallery-motion.
 ════════════════════════════════════════════════════════════ */
 
 import { Renderer, Camera, Transform, Plane, Program, Mesh, Color } from "ogl";
+import gsap from "gsap";
+import { snapTarget, activeIndex } from "./gallery-logic";
+import { decayVelocity, layout, type GalleryGeometry } from "./gallery-motion";
 
-/** Inactive Plane side as a fraction of the Active side (the inner height).
-    One uniform value so the strip reads as "one hero plus a queue of equals."
-    ~0.62 echoes the tallest non-hero box in the prior placeholder strip. */
-const INACTIVE_SCALE = 0.62;
+/* ── Feel constants. Tune these for input weight / glide / snap. ──
+   INPUT_GAIN  : steps/sec of velocity added per wheel pixel.
+   FRICTION    : per-frame (60fps) velocity multiplier — lower = shorter glide.
+   MIN_VELOCITY: steps/sec below which momentum yields to the snap.
+   SNAP_*      : the settle tween onto the nearest whole step. */
+const INPUT_GAIN = 0.0045;
+const FRICTION = 0.92;
+const MIN_VELOCITY = 0.12;
+const SNAP_DURATION = 0.5;
+const SNAP_EASE = "power3.out";
 
 const vertex = /* glsl */ `
   attribute vec3 position;
@@ -39,18 +49,23 @@ export interface GalleryRendererOptions {
   canvas: HTMLCanvasElement;
   /** One flat placeholder color per Plane, in Project order. */
   colors: string[];
+  /** Emitted once per snap-settle with the new discrete Active index. */
+  onActiveChange?: (index: number) => void;
 }
 
 export interface GalleryRenderer {
-  /** Lay the strip out for a new pixel box and gutter, then draw one frame. */
+  /** Lay the strip out for a new pixel box and gutter, then redraw. */
   resize(width: number, height: number, gutterPx: number): void;
-  /** Release the GL context and listeners. */
+  /** Feed a scroll/trackpad delta (px). Cancels any snap and adds momentum. */
+  input(deltaPx: number): void;
+  /** Release the GL context, RAF loop, and tweens. */
   destroy(): void;
 }
 
 export function createGalleryRenderer({
   canvas,
   colors,
+  onActiveChange,
 }: GalleryRendererOptions): GalleryRenderer {
   const renderer = new Renderer({
     canvas,
@@ -60,12 +75,12 @@ export function createGalleryRenderer({
   const gl = renderer.gl;
   gl.clearColor(0, 0, 0, 0);
 
-  // left/right set → orthographic. Real bounds are applied in resize().
   const camera = new Camera(gl, { left: -1, right: 1, bottom: -1, top: 1 });
   camera.position.z = 1; // keep z=0 Planes inside the near/far clip range
 
   const scene = new Transform();
   const geometry = new Plane(gl); // unit quad, centered — scaled per Plane below
+  const total = colors.length;
 
   const meshes = colors.map((hex) => {
     const program = new Program(gl, {
@@ -78,39 +93,105 @@ export function createGalleryRenderer({
     return mesh;
   });
 
-  function resize(width: number, height: number, gutterPx: number): void {
-    if (width <= 0 || height <= 0) return;
+  // ── Motion state. `offset` is continuous scroll in plane-steps. ──
+  let geom: GalleryGeometry | null = null;
+  let offset = 0;
+  let velocity = 0; // steps/sec
+  let mode: "idle" | "momentum" | "snapping" = "idle";
+  let lastActive = 0;
+  let snapTween: gsap.core.Tween | null = null;
+  let raf: number | null = null;
+  let lastTime = 0;
 
-    renderer.setSize(width, height);
-    const halfW = width / 2;
-    const halfH = height / 2;
-    camera.orthographic({ left: -halfW, right: halfW, bottom: -halfH, top: halfH });
-
-    const activeSide = height; // Active Plane fills the full inner height
-    const inactiveSide = height * INACTIVE_SCALE;
-
-    // Walk left → right. The Active Slot is fixed at the left edge; the cursor
-    // tracks the right edge of the last laid Plane so gutters stay exact.
-    let cursorRight = -halfW; // left edge of the strip
+  function draw(): void {
+    if (!geom) return;
+    const planes = layout(offset, total, geom);
     meshes.forEach((mesh, i) => {
-      const isActive = i === 0;
-      const side = isActive ? activeSide : inactiveSide;
-      const leftEdge = isActive ? cursorRight : cursorRight + gutterPx;
-
-      mesh.scale.set(side, side, 1);
-      mesh.position.x = leftEdge + side / 2;
-      mesh.position.y = -halfH + side / 2; // bottom-aligned on the strip baseline
-
-      cursorRight = leftEdge + side;
+      const p = planes[i];
+      mesh.scale.set(p.side, p.side, 1);
+      mesh.position.x = p.x;
+      mesh.position.y = p.y;
     });
-
     renderer.render({ scene, camera });
   }
 
+  function settle(target: number): void {
+    const index = activeIndex(target, total);
+    if (index === lastActive) return;
+    lastActive = index;
+    onActiveChange?.(index);
+  }
+
+  function startSnap(): void {
+    velocity = 0;
+    mode = "snapping";
+    const target = snapTarget(offset);
+    snapTween = gsap.to(
+      { offset },
+      {
+        offset: target,
+        duration: SNAP_DURATION,
+        ease: SNAP_EASE,
+        onUpdate(this: gsap.core.Tween) {
+          offset = (this.targets()[0] as { offset: number }).offset;
+        },
+        onComplete() {
+          offset = target;
+          snapTween = null;
+          mode = "idle";
+          settle(target);
+        },
+      }
+    );
+  }
+
+  function tick(now: number): void {
+    const dt = Math.min((now - lastTime) / 1000, 1 / 30); // clamp long stalls
+    lastTime = now;
+
+    if (mode === "momentum") {
+      offset += velocity * dt;
+      velocity = decayVelocity(velocity, dt, FRICTION);
+      if (Math.abs(velocity) < MIN_VELOCITY) startSnap();
+    }
+
+    draw();
+    raf = mode === "idle" ? null : requestAnimationFrame(tick);
+  }
+
+  function ensureLoop(): void {
+    if (raf !== null) return;
+    lastTime = typeof performance !== "undefined" ? performance.now() : 0;
+    raf = requestAnimationFrame(tick);
+  }
+
+  function resize(width: number, height: number, gutterPx: number): void {
+    if (width <= 0 || height <= 0) return;
+    renderer.setSize(width, height);
+    camera.orthographic({
+      left: -width / 2,
+      right: width / 2,
+      bottom: -height / 2,
+      top: height / 2,
+    });
+    geom = { width, height, gutter: gutterPx };
+    draw(); // redraw immediately even while idle
+  }
+
+  function input(deltaPx: number): void {
+    snapTween?.kill();
+    snapTween = null;
+    velocity += deltaPx * INPUT_GAIN;
+    mode = "momentum";
+    ensureLoop();
+  }
+
   function destroy(): void {
+    if (raf !== null) cancelAnimationFrame(raf);
+    snapTween?.kill();
     const ext = gl.getExtension("WEBGL_lose_context");
     ext?.loseContext();
   }
 
-  return { resize, destroy };
+  return { resize, input, destroy };
 }
