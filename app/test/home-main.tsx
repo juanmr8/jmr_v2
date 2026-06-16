@@ -1,9 +1,8 @@
 import { px, colW } from "./home-grid";
 import { STATEMENT } from "./home-data";
 import { projects } from "@/app/projects/data";
-import { galleryView } from "./gallery/gallery-logic";
 import { GalleryCanvas } from "./gallery/gallery-canvas";
-import { GalleryProvider } from "./gallery/gallery-context";
+import { GalleryCounter } from "./gallery/gallery-counter";
 
 const MAIN_COL = { gridColumn: "4 / 13", height: "100%", paddingLeft: px(16), borderLeft: "1px solid var(--color-line)" } as const;
 
@@ -36,17 +35,14 @@ export function MainTop() {
     top. The strip bleeds past the container's right margin to the viewport edge
     (negative marginRight cancels --marge-x), so the queue of Planes runs off the
     right and is intentionally cut off there — no right-hand padding. The page's
-    overflowX:hidden clips the bleed. Static at Active index 0 this slice. */
+    overflowX:hidden clips the bleed. Counter + rail track the Active Project
+    via the Gallery context (provided around the bottom section in page.tsx). */
 export function MainGallery() {
-  const { counter } = galleryView(0);
-
   return (
-    <GalleryProvider>
-      <div style={{ ...MAIN_COL, position: "relative", paddingBlock: px(16), marginRight: "calc(var(--marge-x) * -1)", display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <span className="t-ui" style={{ position: "absolute", top: px(16), right: "var(--marge-x)", color: "var(--color-ink)", zIndex: 1 }}>{counter}</span>
+    <div style={{ ...MAIN_COL, position: "relative", paddingBlock: px(16), marginRight: "calc(var(--marge-x) * -1)", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <GalleryCounter />
 
-        <GalleryCanvas colors={projects.map((p) => p.color)} />
-      </div>
-    </GalleryProvider>
+      <GalleryCanvas colors={projects.map((p) => p.color)} />
+    </div>
   );
 }

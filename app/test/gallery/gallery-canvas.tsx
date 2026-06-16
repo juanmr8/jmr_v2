@@ -7,7 +7,7 @@
    and the grid's real --gutter, capture EVERY wheel event on the page
    (the home view is locked to one full-height screen, so all scroll
    drives the Gallery — never the document), forward those deltas to
-   the renderer, and push the settled Active index back into React.
+   the renderer, and push the live Active index back into React.
    All drawing/motion lives behind the seam.
 ════════════════════════════════════════════════════════════ */
 
@@ -37,11 +37,7 @@ export function GalleryCanvas({ colors }: GalleryCanvasProps) {
     const renderer = createGalleryRenderer({
       canvas,
       colors,
-      onActiveChange: (index) => {
-        // Slice 3 proves the Active index without binding the counter/rail yet.
-        console.debug("[gallery] active project:", index);
-        onActiveChange.current(index);
-      },
+      onActiveChange: (index) => onActiveChange.current(index),
     });
 
     // The 16px gutter is a fluid --vw unit, not proportional to the strip
