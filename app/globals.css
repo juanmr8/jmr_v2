@@ -2,14 +2,32 @@
 
 /* ─── Tailwind Color Tokens ─────────────────────────────── */
 @theme {
-  --color-bg:      #080808;
+  /* ── Creative Practice palette · sampled from Figma "Home" ── */
+  --color-bg:          #343131;  /* warm charcoal — page background      */
+  --color-ink:         #f9fafb;  /* primary text · white shapes          */
+  --color-muted:       #979595;  /* secondary text · inactive nav        */
+  --color-line:        #4a4747;  /* hairline dividers (≈ ink @ 14%)       */
+  --color-placeholder: #8a8787;  /* gray stand-ins for images (for now)  */
+
+  /* kept for the existing /design-system showcase (app/page.tsx) */
   --color-surface: #111111;
   --color-border:  #222222;
-  --color-muted:   #555555;
-  --color-ink:     #eeeeee;
   --color-accent:  #d4ff5a;
+
+  /* Neue Haas Grotesk Display Pro is licensed — Geist stands in for now.
+     License the real face and swap this ONE line to go live.            */
+  --font-display:  var(--font-geist-sans);
   --font-sans:     var(--font-geist-sans);
   --font-mono:     var(--font-geist-mono);
+
+  /* Staggered fade + rise replayed on every /projects/* navigation.
+     Used via `animate-overlay-reveal` + per-element [animation-delay:…].
+     `both` fill keeps each element hidden through its delay, then holds. */
+  --animate-overlay-reveal: overlayReveal 0.7s ease both;
+  @keyframes overlayReveal {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -28,12 +46,12 @@
 /* ════════════════════════════════════════════════════════════
    --vw  ·  width-relative design pixel
    ─────────────────────────────────────────────────────────
-   canvas: 1440 desktop  ·  390 mobile
-   calc(var(--vw) * 80) = "80px as drawn on the canvas"
+   canvas: 1728 desktop  ·  390 mobile
+   calc(var(--vw) * 24) = "24px as drawn on the canvas"
    Scales smoothly as viewport width changes.
 ════════════════════════════════════════════════════════════ */
 :root {
-  --d: 1440;
+  --d: 1728;
   --m: 390;
   --vw: calc(100vw / var(--d));
 }
@@ -51,11 +69,11 @@
    Use for: display type, full-bleed sections, anything that
    must feel proportional to the whole screen, not just width.
 ════════════════════════════════════════════════════════════ */
-@media (min-aspect-ratio: 1440/900) {
-  :root { --vr: 0.1111svh; }  /* wider than canvas  → height constrains */
+@media (min-aspect-ratio: 1728/1117) {
+  :root { --vr: 0.0895svh; }  /* wider than canvas  → height constrains  (100/1117) */
 }
-@media (max-aspect-ratio: 1440/900) {
-  :root { --vr: 0.0694vw; }   /* taller than canvas → width constrains  */
+@media (max-aspect-ratio: 1728/1117) {
+  :root { --vr: 0.05787vw; }  /* taller than canvas → width constrains   (100/1728) */
 }
 /* Mobile canvas: 390 × 844  |  100÷844=0.1185  |  100÷390=0.2564 */
 @media (max-width: 600px) and (min-aspect-ratio: 390/844) {
@@ -82,10 +100,13 @@
 ════════════════════════════════════════════════════════════ */
 :root {
   --col-l:   12;
-  --marge-x: calc(var(--vw) * 80);           /* outer page margin */
-  --gutter:  calc(var(--vw) * 24);           /* column gap        */
+  --marge-x: calc(var(--vw) * 24);           /* outer page margin (Figma offset) */
+  --gutter:  calc(var(--vw) * 16);           /* column gap                        */
   --area:    calc(100vw - var(--marge-x) * 2);
   --col:     calc((var(--area) - var(--gutter) * (var(--col-l) - 1)) / var(--col-l));
+  /* left edge of column N (1-indexed):  marge-x + (N-1)·(col+gutter)
+     width of an N-col span:             N·col + (N-1)·gutter
+     → see colX()/colW() helpers in app/test/home-grid.ts            */
 }
 @media (max-width: 600px) {
   :root {
@@ -152,6 +173,37 @@
   line-height:    calc(var(--label-l) * var(--vf));
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════════════════════
+   CREATIVE PRACTICE TYPE  ·  Neue Haas Grotesk (Geist stand-in)
+   ─────────────────────────────────────────────────────────
+   The Figma uses essentially three roles, all one family:
+     · statement  75 / 69   500   −0.03em   the hero sentence
+     · logo       20 / 18   700   −0.02em   j.mr
+     · ui         16 / 17.6 500    0        nav · meta · labels
+   Sizes scale by --vw so the whole 1728 canvas grows/shrinks
+   uniformly with viewport width (desktop-first).
+════════════════════════════════════════════════════════════ */
+.t-statement {
+  font-family:    var(--font-display);
+  font-weight:    500;
+  font-size:      calc(var(--vr) * 75);   /* fit-to-screen: shrinks on short/wide */
+  line-height:    calc(var(--vr) * 69);
+  letter-spacing: -0.03em;
+}
+.t-logo {
+  font-family:    var(--font-display);
+  font-weight:    700;
+  font-size:      calc(var(--vw) * 20);
+  line-height:    calc(var(--vw) * 18);
+  letter-spacing: -0.02em;
+}
+.t-ui {
+  font-family:    var(--font-display);
+  font-weight:    500;
+  font-size:      calc(var(--vw) * 16);
+  line-height:    calc(var(--vw) * 17.6);
 }
 
 /* ════════════════════════════════════════════════════════════
