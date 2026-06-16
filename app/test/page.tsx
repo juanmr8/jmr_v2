@@ -2,6 +2,7 @@ import { px } from "./home-grid";
 import { HomeNav } from "./home-nav";
 import { RailTop, RailBottom } from "./home-rail";
 import { MainTop, MainGallery } from "./home-main";
+import { GalleryProvider } from "./gallery/gallery-context";
 
 /**
  * Creative Practice — Home (desktop, height-constrained).
@@ -36,12 +37,18 @@ export default function TestHome() {
         </div>
       </section>
 
-      <section style={zone}>
-        <div className="container ds-grid" style={grid}>
-          <RailBottom />
-          <MainGallery />
-        </div>
-      </section>
+      {/* Bottom section shares one Gallery context: the renderer pushes the
+          live Active index here, and both RailBottom (Client/Role/href) and
+          MainGallery's counter read it — so they update together, the moment
+          the Active Project changes as you scroll. */}
+      <GalleryProvider>
+        <section style={zone}>
+          <div className="container ds-grid" style={grid}>
+            <RailBottom />
+            <MainGallery />
+          </div>
+        </section>
+      </GalleryProvider>
     </main>
   );
 }
