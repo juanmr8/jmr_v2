@@ -6,10 +6,11 @@
 
    This loop is the per-frame source of truth for Plane position &
    scale (Slice 3). Scroll impulses feed momentum; momentum decays
-   then snaps so exactly one Plane fills the Active Slot. The only
-   thing that escapes per frame is nothing — the discrete Active
-   index is emitted ONCE on snap-settle via onActiveChange. The
-   geometry math is pure and lives in ./gallery-motion.
+   then snaps so exactly one Plane fills the Active Slot. The Active
+   index escapes via onActiveChange the moment the Plane nearest the
+   Active Slot changes — live, as the strip moves — but deduped, so
+   it emits once per project crossing, never per frame. The geometry
+   math is pure and lives in ./gallery-motion.
 ════════════════════════════════════════════════════════════ */
 
 import { Renderer, Camera, Transform, Plane, Program, Mesh, Color } from "ogl";
@@ -49,7 +50,8 @@ export interface GalleryRendererOptions {
   canvas: HTMLCanvasElement;
   /** One flat placeholder color per Plane, in Project order. */
   colors: string[];
-  /** Emitted once per snap-settle with the new discrete Active index. */
+  /** Emitted live with the new discrete Active index whenever the Plane
+      nearest the Active Slot changes — deduped to one call per crossing. */
   onActiveChange?: (index: number) => void;
 }
 
@@ -115,8 +117,13 @@ export function createGalleryRenderer({
     renderer.render({ scene, camera });
   }
 
-  function settle(target: number): void {
-    const index = activeIndex(target, total);
+  // Emit the discrete Active index whenever the Plane nearest the Active Slot
+  // changes — live, as the strip moves. snapTarget rounds the continuous offset
+  // to the nearest whole step, so this flips the instant the strip crosses each
+  // half-step. Deduped against the last emit: React re-renders once per project
+  // crossing, never per frame.
+  function syncActive(): void {
+    const index = activeIndex(snapTarget(offset), total);
     if (index === lastActive) return;
     lastActive = index;
     onActiveChange?.(index);
@@ -139,7 +146,7 @@ export function createGalleryRenderer({
           offset = target;
           snapTween = null;
           mode = "idle";
-          settle(target);
+          syncActive();
         },
       }
     );
@@ -155,6 +162,7 @@ export function createGalleryRenderer({
       if (Math.abs(velocity) < MIN_VELOCITY) startSnap();
     }
 
+    syncActive(); // live (deduped) — runs through momentum and the snap glide
     draw();
     raf = mode === "idle" ? null : requestAnimationFrame(tick);
   }
