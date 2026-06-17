@@ -18,7 +18,7 @@ const MobileGalleryCanvas = dynamic(() => import("./mobile-gallery-canvas"), {
 // lands on an off-center Plane does nothing, so the user settles it by drag).
 const REFERENCE_LINE_PCT = 0.5;
 const PLANE_WIDTH_PCT = 0.78;
-const PLANE_ASPECT = 4000 / 2766;
+const PLANE_ASPECT = 1; // square frame — mirror of mobile-gallery-column
 
 export function MobileHome() {
   const surfaceRef = useRef<HTMLDivElement>(null);
