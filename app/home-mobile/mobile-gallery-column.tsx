@@ -18,7 +18,7 @@ import { useMobileGalleryStore } from "./mobile-gallery-store";
 
 // ── Tunables ── eyeball these first; aspect/anchor are the awkward ones.
 const PLANE_WIDTH_PCT = 0.78;          // Plane width as a fraction of screen width
-const PLANE_ASPECT = 4000 / 2766;      // landscape (source imagery); cover-fit, never distorts
+const PLANE_ASPECT = 1;                // square frame; the shader cover-fits + crops, never distorts
 const X_ANCHOR = 0.5;                  // Plane center across the width (0.5 = centered)
 const GAP_PX = 14;                     // vertical gap between Planes, CSS px
 const REFERENCE_LINE_PCT = 0.5;        // where a Plane becomes Active — centered
@@ -37,6 +37,23 @@ const TRANSPARENT =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+// Scale falloff around the reference line: full size on the line, ramping down
+// to MIN_SCALE one step away, flat MIN_SCALE beyond. Linear (not eased) is
+// deliberate — a piecewise-linear ramp makes the spacing integral below exact,
+// so every Plane ends up the same edge-to-edge distance from its neighbours no
+// matter how large the Active Plane has grown.
+const scaleAt = (n: number) =>
+  MIN_SCALE + (1 - MIN_SCALE) * Math.max(0, 1 - Math.abs(n));
+
+// ∫₀^|n| scaleAt — closed form of that ramp. Used to convert an index-offset
+// from the line into a world distance whose adjacent gaps are constant: the
+// trapezoid area over each unit step equals (size + gap), so gaps never drift.
+const integralScale = (n: number) => {
+  const a = Math.abs(n);
+  if (a >= 1) return MIN_SCALE * a + (1 - MIN_SCALE) * 0.5;
+  return MIN_SCALE * a + (1 - MIN_SCALE) * (a - (a * a) / 2);
+};
 
 export default function MobileGalleryColumn() {
   const { size, viewport } = useThree();
@@ -151,14 +168,16 @@ export default function MobileGalleryColumn() {
       const raw = items[i].baseY + offsetWorld;
       const wrapped =
         ((((raw + totalH / 2) % totalH) + totalH) % totalH) - totalH / 2;
-      mesh.position.y = wrapped;
 
-      // Scale up as a Plane nears the reference line: full size on the line,
-      // easing down to MIN_SCALE one step away and holding there. Distance is
-      // measured in steps so spacing changes don't change the falloff.
-      const d = Math.min(Math.abs(wrapped - yLine) / step, 1);
-      const t = easeOut(1 - d);
-      const scale = MIN_SCALE + (1 - MIN_SCALE) * t;
+      // The uniform wrap gives a clean integer index-offset from the line; the
+      // *position* is then re-derived from it so spacing stays even. Walking `n`
+      // steps out from the line through ∫(size + gap) keeps every edge-to-edge
+      // gap equal to `gap` even though the Active Plane is rendered larger.
+      const n = (wrapped - yLine) / step;
+      const dist = H * integralScale(n) + gap * Math.abs(n);
+      mesh.position.y = yLine + (n < 0 ? -dist : dist);
+
+      const scale = scaleAt(n);
       mesh.scale.set(scale, scale, 1);
 
       const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;
