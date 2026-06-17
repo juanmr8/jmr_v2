@@ -137,7 +137,9 @@ export default function MobileGalleryColumn() {
     }
     wasDragging.current = dragging;
 
-    const target = store.targetOffset;
+    // Re-read after the snap above (zustand replaces state immutably, so the
+    // frame-start `store` snapshot still holds the pre-snap value).
+    const target = useMobileGalleryStore.getState().targetOffset;
     const prev = current.current;
     const lerp = dragging ? DRAG_LERP : SETTLE_LERP;
     current.current = reduced.current
