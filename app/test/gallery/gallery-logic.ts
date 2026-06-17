@@ -44,6 +44,10 @@ export function activeIndex(snap: number, total: number): number {
   return wrapIndex(snap, total);
 }
 
+/** The detail-page href for a Project slug — the one owner of this URL shape,
+    shared by the Active view and the per-Plane link overlays. */
+export const projectHref = (slug: string): string => `/projects/${slug}`;
+
 export interface GalleryView {
   project: Project;
   href: string;
@@ -70,7 +74,7 @@ export function galleryView(
   const width = Math.max(2, String(total).length);
   return {
     project,
-    href: `/projects/${project.slug}`,
+    href: projectHref(project.slug),
     counter: `${pad(active + 1, width)}/${pad(total, width)}`,
   };
 }
