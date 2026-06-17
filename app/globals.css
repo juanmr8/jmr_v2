@@ -28,6 +28,14 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: none; }
   }
+
+  /* Quick crossfade for the mobile Set layer when the Active Project changes.
+     Used via `animate-set-fade`, keyed on the Active index so it replays. */
+  --animate-set-fade: setFade 160ms ease both;
+  @keyframes setFade {
+    from { opacity: 0.25; }
+    to   { opacity: 1; }
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
