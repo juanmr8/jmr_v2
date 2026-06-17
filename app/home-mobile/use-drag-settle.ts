@@ -31,6 +31,7 @@ export function useDragSettle(
     let startY = 0;
     let travelled = 0;
     let pointerDown = false;
+    let wheelEnd: ReturnType<typeof setTimeout> | null = null;
 
     const begin = (y: number) => {
       lastY = y;
@@ -70,9 +71,15 @@ export function useDragSettle(
     };
 
     // ── wheel (desktop testing) ──
+    // Wheel has no native gesture-end, so debounce one: each tick keeps the
+    // gallery "dragging"; a short silence ends it, firing the same magnetic
+    // settle that touchend does. Without this the column never snaps on wheel.
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       addDelta(e.deltaY * WHEEL_SENSITIVITY);
+      setDragging(true);
+      if (wheelEnd) clearTimeout(wheelEnd);
+      wheelEnd = setTimeout(() => setDragging(false), 140);
     };
 
     // ── mouse drag (desktop testing) ──
@@ -94,6 +101,7 @@ export function useDragSettle(
     window.addEventListener("mouseup", onMouseUp);
 
     return () => {
+      if (wheelEnd) clearTimeout(wheelEnd);
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
