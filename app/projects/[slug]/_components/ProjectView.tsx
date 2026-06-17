@@ -7,6 +7,7 @@ import { useGalleryStore } from "./useGalleryStore";
 import MiniMap from "./MiniMap";
 import AboutPanel from "./AboutPanel";
 import ProjectNav from "./ProjectNav";
+import { SiteMenuBar, SiteMenuMobileTop } from "../../../menu";
 
 // Canvas is client-only (WebGL touches window) — never render it on the server.
 const GalleryCanvas = dynamic(() => import("./GalleryCanvas"), { ssr: false });
@@ -58,6 +59,17 @@ export default function ProjectView({ project, prev, next }: Props) {
         ref={dragRef}
         className="absolute top-0 bottom-0 left-1/4 z-[1] w-[clamp(280px,22vw,460px)] cursor-grab"
       />
+
+      {/* Shared menu chrome — persistent (not gated on the texture reveal) so
+          the bar is there the instant the page mounts. Differenced against the
+          gallery for legibility, matching the project overlays. The desktop
+          grid bar swaps for the mobile logo+Contact bar at the 760px reflow. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] mix-blend-difference max-[760px]:hidden">
+        <SiteMenuBar />
+      </div>
+      <div className="hidden max-[760px]:contents">
+        <SiteMenuMobileTop />
+      </div>
 
       {/* Keyed by slug so the overlay group remounts on every navigation,
           replaying the keyframe reveal even when the textures are cached. */}

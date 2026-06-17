@@ -7,6 +7,7 @@ import { useMobileGalleryStore } from "./mobile-gallery-store";
 import { galleryView } from "../gallery/gallery-logic";
 import { STATEMENT } from "../home-data";
 import { MobileSetLayer } from "./mobile-set-layer";
+import { SiteMenuMobileTop, SiteMenuMobileSections } from "../menu";
 
 // Canvas is client-only (WebGL touches window) and must never SSR.
 const MobileGalleryCanvas = dynamic(() => import("./mobile-gallery-canvas"), {
@@ -51,26 +52,17 @@ export function MobileHome() {
         <MobileGalleryCanvas />
       </div>
 
-      {/* Slim top bar: logo + Contact. p-4! → 16px top + left/right; the `!`
-          beats the unlayered global reset (* { padding: 0 }), which otherwise
-          wins over Tailwind's layered utilities. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] flex items-center justify-between p-4! mix-blend-difference">
-        <span className="t-logo text-white">j.mr</span>
-        <span className="t-ui pointer-events-auto text-white underline underline-offset-2">
-          Contact
-        </span>
-      </div>
+      {/* Slim top bar: shared logo + Contact. */}
+      <SiteMenuMobileTop />
 
       <MobileSetLayer />
 
-      {/* Bottom band: statement on the left half, section links on the right.
-          Lab/About are placeholders — to be wired to their pages later. */}
+      {/* Bottom band: statement on the left half, shared section links on the
+          right. p-4! → 16px inset; the `!` beats the unlayered global reset
+          (* { padding: 0 }), which otherwise wins over layered utilities. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex items-end justify-between gap-4 p-4! mix-blend-difference">
         <p className="w-1/2 text-xs leading-snug text-white">{STATEMENT}</p>
-        <nav className="pointer-events-auto flex flex-col items-end gap-1 text-xs text-white">
-          <span>Lab</span>
-          <span>About</span>
-        </nav>
+        <SiteMenuMobileSections className="items-end" />
       </div>
     </main>
   );
