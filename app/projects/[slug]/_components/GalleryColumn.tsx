@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import GalleryPlane from "./GalleryPlane";
 import { useGalleryStore } from "./useGalleryStore";
+import { PLACEHOLDER_FRAME_COUNT } from "./gallery-frames";
 
 const GAP_PX = 40;
 const LERP = 0.085;      // inertia during wheel / touch
@@ -28,12 +29,18 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 interface Props {
   images: string[];
   slug: string;
+  color: string; // flat fill for placeholder projects (no images yet)
 }
 
-export default function GalleryColumn({ images, slug }: Props) {
+export default function GalleryColumn({ images, slug, color }: Props) {
   const { size, viewport } = useThree();
   const textures = useTexture(images) as THREE.Texture[];
   textures.forEach((t) => (t.colorSpace = THREE.SRGBColorSpace));
+
+  // Frames in one loop cycle: real images, or a fixed run of flat-color planes
+  // when this project has none yet. Everything below sizes off `frameCount`, so
+  // an image-less project still loops instead of collapsing to NaN geometry.
+  const frameCount = images.length || PLACEHOLDER_FRAME_COUNT;
 
   // CSS pixels -> world units at the z=0 focal plane (perspective camera).
   const pxToWorld = viewport.width / size.width;
@@ -51,7 +58,7 @@ export default function GalleryColumn({ images, slug }: Props) {
   // One image cycle in CSS pixels — used to map the scroll offset to mini-map
   // progress, and to size the mini-map's viewport frame.
   const stepPx = planeHpx + GAP_PX;
-  const cyclePx = images.length * stepPx;
+  const cyclePx = frameCount * stepPx;
   const frameRatio = THREE.MathUtils.clamp(size.height / cyclePx, 0, 1);
 
   // Left edge at ~25% of the viewport; every image shares this left edge.
@@ -60,20 +67,20 @@ export default function GalleryColumn({ images, slug }: Props) {
 
   // Duplicate the set enough times to fill the loop without gaps (covers
   // projects with only a few images).
-  const baseStack = images.length * step;
+  const baseStack = frameCount * step;
   const reps = Math.max(2, Math.ceil((viewport.height * 2) / baseStack));
-  const count = images.length * reps;
+  const count = frameCount * reps;
   const totalH = count * step;
 
   const items = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
-        texture: textures[i % images.length],
-        imageIndex: i % images.length,
+        texture: textures[i % frameCount],
+        imageIndex: i % frameCount,
         baseY: -i * step,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [count, step, images.length, textures]
+    [count, step, frameCount, textures]
   );
 
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
@@ -161,6 +168,7 @@ export default function GalleryColumn({ images, slug }: Props) {
             meshRefs.current[i] = el;
           }}
           texture={item.texture}
+          color={color}
           width={W}
           height={H}
           x={xCenter}

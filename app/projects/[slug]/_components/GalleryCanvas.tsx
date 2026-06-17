@@ -6,11 +6,12 @@ import GalleryColumn from "./GalleryColumn";
 interface Props {
   images: string[];
   slug: string;
+  color: string; // flat fill for placeholder projects (no images yet)
 }
 
 // Perspective camera so the velocity-driven Z-bend warp is actually visible
 // (an orthographic projection would render the depth displacement invisibly).
-export default function GalleryCanvas({ images, slug }: Props) {
+export default function GalleryCanvas({ images, slug, color }: Props) {
   return (
     <Canvas
       flat
@@ -20,7 +21,7 @@ export default function GalleryCanvas({ images, slug }: Props) {
     >
       <Suspense fallback={null}>
         {/* key={slug} forces fresh textures/refs when navigating projects. */}
-        <GalleryColumn key={slug} images={images} slug={slug} />
+        <GalleryColumn key={slug} images={images} slug={slug} color={color} />
       </Suspense>
     </Canvas>
   );

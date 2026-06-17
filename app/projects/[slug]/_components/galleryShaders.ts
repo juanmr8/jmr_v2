@@ -19,13 +19,16 @@ export const vertexShader = /* glsl */ `
 
 // Fragment shader — maps the texture onto the uniform plane with
 // `object-fit: cover` behavior, so differing image aspect ratios are cropped
-// (centered) instead of stretched.
+// (centered) instead of stretched. Projects without imagery yet skip the
+// texture path entirely and paint a flat `uColor` instead.
 export const fragmentShader = /* glsl */ `
   precision highp float;
 
   uniform vec2 uImageSizes;  // source texture px
   uniform vec2 uPlaneSizes;  // plane px (uniform for all planes)
   uniform sampler2D uTexture;
+  uniform vec3 uColor;       // flat fill when uHasTexture is 0 (placeholders)
+  uniform float uHasTexture; // 1 = sample uTexture, 0 = paint uColor
   uniform float uOpacity;    // intro fade-in, 0 -> 1
   uniform float uStrength;   // smoothed scroll velocity (same as the warp)
 
@@ -37,6 +40,15 @@ export const fragmentShader = /* glsl */ `
   #define ABERR_SCALE 0.172
 
   void main() {
+    // No texture bound — paint the flat placeholder color and bail before any
+    // sampling (uTexture is null in this mode). Color is linear in, sRGB out
+    // via colorspace_fragment, matching the textured path.
+    if (uHasTexture < 0.5) {
+      gl_FragColor = vec4(uColor, uOpacity);
+      #include <colorspace_fragment>
+      return;
+    }
+
     vec2 ratio = vec2(
       min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
       min((uPlaneSizes.y / uPlaneSizes.x) / (uImageSizes.y / uImageSizes.x), 1.0)
