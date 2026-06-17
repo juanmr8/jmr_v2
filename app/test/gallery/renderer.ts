@@ -70,7 +70,8 @@ export interface GalleryRenderer {
   resize(width: number, height: number, gutterPx: number): void;
   /** Feed a scroll/trackpad delta (px). Cancels any snap and adds momentum. */
   input(deltaPx: number): void;
-  /** Release the GL context, RAF loop, and tweens. */
+  /** Stop the RAF loop and any running tween. The GL context is left intact so
+      a re-mounted effect can reuse the same canvas (see destroy() body). */
   destroy(): void;
 }
 
@@ -117,7 +118,10 @@ export function createGalleryRenderer({
   let lastTime = 0;
 
   function draw(): void {
-    if (!geom) return;
+    // Bail if we have no geometry yet, or the GL context was lost (tab GPU
+    // reset, browser context limit). Drawing on a lost context reads OGL's
+    // program/attribute maps as undefined and throws inside render().
+    if (!geom || gl.isContextLost()) return;
     const g = geom; // narrow for the closures below
     const planes = layout(offset, total, g);
     meshes.forEach((mesh, i) => {
@@ -213,8 +217,13 @@ export function createGalleryRenderer({
   function destroy(): void {
     if (raf !== null) cancelAnimationFrame(raf);
     snapTween?.kill();
-    const ext = gl.getExtension("WEBGL_lose_context");
-    ext?.loseContext();
+    // Deliberately NOT calling WEBGL_lose_context.loseContext(): React
+    // (StrictMode / Fast Refresh) tears this effect down and re-runs it on the
+    // SAME <canvas>, and a canvas only ever hands back its one context. Losing
+    // it here poisons the next renderer built on that canvas — its programs
+    // compile against a dead context and render() throws. The context is freed
+    // by the browser when the canvas unmounts; the RAF loop + tween are what we
+    // actually own and stop here.
   }
 
   return { resize, input, destroy };
