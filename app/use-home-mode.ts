@@ -3,14 +3,17 @@ import { useEffect, useState } from "react";
 
 export type HomeMode = "mobile" | "desktop" | "rotate";
 
-// Phones (narrow + portrait) get the vertical mobile gallery. Everything narrow
-// but the wrong shape is asked to rotate rather than forced into a layout that
-// doesn't fit:
-//   • portrait tablet / iPad (768–1023px wide) → rotate → landscape ≥1024 → desktop
-//   • any narrow screen in landscape            → rotate → portrait        → mobile
-// 1024px+ is always desktop.
+// Phones (narrow + portrait) get the vertical mobile gallery. Only genuinely
+// wrong-shape viewports are asked to rotate — a merely small/narrow window is
+// NOT, so resizing a desktop browser keeps showing the desktop layout:
+//   • portrait tablet / iPad (768–1023px wide, portrait) → rotate → landscape ≥1024 → desktop
+//   • phone in landscape (narrow AND short ≤500px tall)  → rotate → portrait        → mobile
+// Everything else (incl. small balanced desktop windows) is desktop.
 const PHONE = "(max-width: 767.98px) and (orientation: portrait)";
-const NARROW = "(max-width: 1023.98px)";
+const PORTRAIT_TABLET =
+  "(min-width: 768px) and (max-width: 1023.98px) and (orientation: portrait)";
+const PHONE_LANDSCAPE =
+  "(orientation: landscape) and (max-width: 1023.98px) and (max-height: 500px)";
 
 /**
  * `null` until mounted (the server can't know the viewport), then one of three
@@ -22,19 +25,17 @@ export function useHomeMode(): HomeMode | null {
 
   useEffect(() => {
     const phone = window.matchMedia(PHONE);
-    const narrow = window.matchMedia(NARROW);
+    const portraitTablet = window.matchMedia(PORTRAIT_TABLET);
+    const phoneLandscape = window.matchMedia(PHONE_LANDSCAPE);
     const sync = () => {
       if (phone.matches) return setMode("mobile");
-      if (narrow.matches) return setMode("rotate");
+      if (portraitTablet.matches || phoneLandscape.matches) return setMode("rotate");
       setMode("desktop");
     };
     sync();
-    phone.addEventListener("change", sync);
-    narrow.addEventListener("change", sync);
-    return () => {
-      phone.removeEventListener("change", sync);
-      narrow.removeEventListener("change", sync);
-    };
+    const queries = [phone, portraitTablet, phoneLandscape];
+    queries.forEach((q) => q.addEventListener("change", sync));
+    return () => queries.forEach((q) => q.removeEventListener("change", sync));
   }, []);
 
   return mode;
