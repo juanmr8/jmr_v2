@@ -16,7 +16,13 @@
 import { Renderer, Camera, Transform, Plane, Program, Mesh, Color } from "ogl";
 import gsap from "gsap";
 import { snapTarget, activeIndex } from "./gallery-logic";
-import { decayVelocity, layout, type GalleryGeometry } from "./gallery-motion";
+import {
+  decayVelocity,
+  layout,
+  screenRect,
+  type GalleryGeometry,
+  type ScreenRect,
+} from "./gallery-motion";
 
 /* ── Feel constants. Tune these for input weight / glide / snap. ──
    INPUT_GAIN  : steps/sec of velocity added per wheel pixel.
@@ -53,6 +59,10 @@ export interface GalleryRendererOptions {
   /** Emitted live with the new discrete Active index whenever the Plane
       nearest the Active Slot changes — deduped to one call per crossing. */
   onActiveChange?: (index: number) => void;
+  /** Emitted every redraw with each Plane's live on-screen rect (DOM space,
+      Plane order), so the DOM link overlays can track the strip per frame —
+      ADR-0001: anchors follow the Planes, no in-canvas hit-testing. */
+  onFrame?: (rects: ScreenRect[]) => void;
 }
 
 export interface GalleryRenderer {
@@ -68,6 +78,7 @@ export function createGalleryRenderer({
   canvas,
   colors,
   onActiveChange,
+  onFrame,
 }: GalleryRendererOptions): GalleryRenderer {
   const renderer = new Renderer({
     canvas,
@@ -107,7 +118,8 @@ export function createGalleryRenderer({
 
   function draw(): void {
     if (!geom) return;
-    const planes = layout(offset, total, geom);
+    const g = geom; // narrow for the closures below
+    const planes = layout(offset, total, g);
     meshes.forEach((mesh, i) => {
       const p = planes[i];
       mesh.scale.set(p.side, p.side, 1);
@@ -115,6 +127,10 @@ export function createGalleryRenderer({
       mesh.position.y = p.y;
     });
     renderer.render({ scene, camera });
+    // Hand the same per-frame rects to the DOM overlay layer (anchors track the
+    // Planes). Runs on every redraw — momentum, snap glide, and idle resize —
+    // so overlays stay synced even when the RAF loop is parked.
+    onFrame?.(planes.map((p) => screenRect(p, g)));
   }
 
   // Emit the discrete Active index whenever the Plane nearest the Active Slot

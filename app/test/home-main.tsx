@@ -42,7 +42,9 @@ export function MainGallery() {
     <div style={{ ...MAIN_COL, position: "relative", paddingBlock: px(16), marginRight: "calc(var(--marge-x) * -1)", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <GalleryCounter />
 
-      <GalleryCanvas colors={projects.map((p) => p.color)} />
+      <GalleryCanvas
+        items={projects.map((p) => ({ color: p.color, slug: p.slug, title: p.title }))}
+      />
     </div>
   );
 }

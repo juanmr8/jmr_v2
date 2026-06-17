@@ -32,6 +32,27 @@ export interface PlaneLayout {
   side: number; // square side (px) — drives mesh scale
 }
 
+/** A Plane's on-screen box in DOM space: top-left origin, +y down, CSS px
+    relative to the strip's top-left corner. What a DOM overlay needs. */
+export interface ScreenRect {
+  left: number; // px from the strip's left edge
+  top: number; // px from the strip's top edge
+  size: number; // square side (px)
+}
+
+/**
+ * Convert a Plane's layout (center origin, +y up — the renderer's camera space)
+ * into a DOM rect (top-left origin, +y down). Pure arithmetic, no DOM: the
+ * overlay layer reads these to place its transparent `<a>` over each Plane.
+ */
+export function screenRect(p: PlaneLayout, geom: GalleryGeometry): ScreenRect {
+  return {
+    left: geom.width / 2 + p.x - p.side / 2,
+    top: geom.height / 2 - p.y - p.side / 2,
+    size: p.side,
+  };
+}
+
 /** Steps of slack kept off the left edge for the Plane leaving the Active Slot.
     The Active Plane is left-anchored, so one step is enough to carry the leaver
     fully off-screen-left before it recycles. Keeping this at 1 also pushes the

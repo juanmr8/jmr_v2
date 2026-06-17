@@ -5,6 +5,7 @@ import {
   layout,
   loopRank,
   planeSide,
+  screenRect,
   type GalleryGeometry,
 } from "./gallery-motion";
 
@@ -145,6 +146,29 @@ describe("layout is seamless across the loop", () => {
     const b = layout(1, TOTAL, GEOM);
     expect(b[1].x).toBeCloseTo(a[0].x);
     expect(b[1].side).toBeCloseTo(a[0].side);
+  });
+});
+
+describe("screenRect", () => {
+  it("maps a centered Plane to the strip's middle, flipping +y up → +y down", () => {
+    const r = screenRect({ x: 0, y: 0, side: 100 }, GEOM);
+    expect(r.left).toBeCloseTo(GEOM.width / 2 - 50);
+    expect(r.top).toBeCloseTo(GEOM.height / 2 - 50);
+    expect(r.size).toBe(100);
+  });
+
+  it("puts the Active Plane (flush bottom-left, full height) at the strip's bottom-left", () => {
+    const [hero] = layout(0, TOTAL, GEOM); // rank 0, full height, left-anchored
+    const r = screenRect(hero, GEOM);
+    expect(r.left).toBeCloseTo(0); // flush to the strip's left edge
+    expect(r.top + r.size).toBeCloseTo(GEOM.height); // bottom sits on the baseline
+    expect(r.size).toBeCloseTo(GEOM.height);
+  });
+
+  it("flips the y axis — a Plane higher up (larger +y) gets a smaller top", () => {
+    const low = screenRect({ x: 0, y: -50, side: 40 }, GEOM);
+    const high = screenRect({ x: 0, y: 50, side: 40 }, GEOM);
+    expect(high.top).toBeLessThan(low.top);
   });
 });
 
