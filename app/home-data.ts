@@ -8,12 +8,6 @@
 export const STATEMENT =
   "Juan Mora Romero is the creative practice of a multidisciplinary designer and developer who can't help but color outside the lines.";
 
-export const NAV_LINKS = [
-  { label: "Work", active: true },
-  { label: "About", active: false },
-  { label: "Lab", active: false },
-] as const;
-
 /** Left-rail project meta. `top` = canvas-px of the label baseline row. */
 export const META = [
   { label: "Services:", value: "Design, Development", top: 530 },

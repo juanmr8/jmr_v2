@@ -100,6 +100,15 @@
 :root { --vf: 1px; }
 
 /* ════════════════════════════════════════════════════════════
+   --header-height  ·  height of the shared SiteMenuBar
+   ─────────────────────────────────────────────────────────
+   logo line-height (18) + paddingBlock (16 × 2) = 50 canvas-px.
+   Project-detail overlays sit at calc(var(--header-height) + 16px)
+   so the mini-map / year clear the menu bar.
+════════════════════════════════════════════════════════════ */
+:root { --header-height: calc(var(--vw) * 50); }
+
+/* ════════════════════════════════════════════════════════════
    GRID SYSTEM
    ─────────────────────────────────────────────────────────
    All numbers are design-canvas pixels (× --vw to get fluid px).
