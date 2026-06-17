@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   INACTIVE_SCALE,
   decayVelocity,
+  entranceOffset,
   layout,
   loopRank,
   planeSide,
@@ -185,5 +186,38 @@ describe("decayVelocity", () => {
 
   it("preserves direction", () => {
     expect(decayVelocity(-3, 1 / 60, 0.9)).toBeLessThan(0);
+  });
+});
+
+describe("entranceOffset", () => {
+  it("is identity when the Plane is home (progress 1)", () => {
+    const { dx, dy } = entranceOffset(1, GEOM);
+    expect(dx).toBeCloseTo(0);
+    expect(dy).toBeCloseTo(0);
+  });
+
+  it("starts the Plane below and to the right of its slot (progress 0)", () => {
+    const { dx, dy } = entranceOffset(0, GEOM);
+    expect(dx).toBeGreaterThan(0); // to the right
+    expect(dy).toBeLessThan(0); // below (camera space is +y up)
+  });
+
+  it("starts fully off-screen below — clears the strip's bottom edge", () => {
+    const { dy } = entranceOffset(0, GEOM);
+    expect(Math.abs(dy)).toBeGreaterThan(GEOM.height);
+  });
+
+  it("decays monotonically toward home as progress grows", () => {
+    const start = entranceOffset(0, GEOM);
+    const mid = entranceOffset(0.5, GEOM);
+    expect(Math.abs(mid.dx)).toBeLessThan(Math.abs(start.dx));
+    expect(Math.abs(mid.dy)).toBeLessThan(Math.abs(start.dy));
+  });
+
+  it("scales the displacement with the strip height", () => {
+    const small = entranceOffset(0, { width: 1000, height: 100, gutter: 16 });
+    const big = entranceOffset(0, { width: 1000, height: 400, gutter: 16 });
+    expect(Math.abs(big.dy)).toBeGreaterThan(Math.abs(small.dy));
+    expect(Math.abs(big.dx)).toBeGreaterThan(Math.abs(small.dx));
   });
 });

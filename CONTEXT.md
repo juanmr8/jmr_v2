@@ -23,3 +23,7 @@ _Avoid_: Selected, current project
 **Project**:
 A body of work shown as one Plane in the Gallery and linked to its own detail page (`/projects/[slug]`).
 _Avoid_: Work item, piece
+
+**Intro**:
+The animation that plays whenever the Gallery mounts: each Plane slides in from off-screen (below and to the right of its slot) and settles into the resting layout, staggered left-to-right so the strip assembles itself — Active Plane first, then the queue. Scroll input is locked until it finishes; skipped entirely under reduced-motion.
+_Avoid_: Reveal, entrance, splash

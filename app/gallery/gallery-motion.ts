@@ -134,3 +134,34 @@ export function layout(
 export function decayVelocity(v: number, dt: number, perFrame: number): number {
   return v * Math.pow(perFrame, dt * 60);
 }
+
+/* ── Intro entrance. The staggered diagonal assemble when the Gallery mounts:
+   each Plane starts off-screen below-and-right of its resting slot and eases
+   home. These are the spatial magnitudes (fractions of the strip height, so
+   they scale with the Planes); the renderer owns the timing. ── */
+
+/** How far below its slot a Plane starts. >1 so the Plane clears the strip's
+    bottom edge — it starts fully off-screen, never flashing at rest. */
+export const ENTRANCE_RISE = 1.15;
+
+/** How far right of its slot a Plane starts. The horizontal half of the
+    diagonal — kept smaller than the rise so Planes rise more than they slide. */
+export const ENTRANCE_DRIFT = 0.25;
+
+/**
+ * Per-Plane displacement to add to a resting layout during the Intro.
+ * `progress` ∈ [0,1]: 0 = fully off-screen (below and to the right of the slot),
+ * 1 = home (zero offset). Camera space (+y up), so "below" is negative y. Pure:
+ * the renderer adds this to each Plane's resting position every frame, then
+ * decays it to zero as the entrance tween runs.
+ */
+export function entranceOffset(
+  progress: number,
+  geom: GalleryGeometry
+): { dx: number; dy: number } {
+  const out = 1 - progress;
+  return {
+    dx: out * geom.height * ENTRANCE_DRIFT,
+    dy: -out * geom.height * ENTRANCE_RISE,
+  };
+}
