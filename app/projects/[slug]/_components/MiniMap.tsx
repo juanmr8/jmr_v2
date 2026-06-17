@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { useGalleryStore } from "./useGalleryStore";
+import { PLACEHOLDER_FRAME_COUNT } from "./gallery-frames";
 
 // A miniature recreation of the gallery: the project's images lined up in a
 // tiny column, with a red frame (the viewport) that travels down — and loops —
@@ -12,13 +13,21 @@ const CELL_GAP = 2;
 const PAD_X = 7; // breathing room the frame adds on each side
 const PAD_Y = 6; // breathing room the frame adds top/bottom
 
-export default function MiniMap({ images }: { images: string[] }) {
+export default function MiniMap({
+  images,
+  color,
+}: {
+  images: string[];
+  color: string;
+}) {
   const frameRef = useRef<HTMLDivElement>(null);
   // Second frame: the wrapped continuation, offset one loop up. When the main
   // frame slides off the bottom, this one shows its remainder at the top.
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const n = images.length;
+  // Mirror the gallery: real thumbnails, or a fixed run of flat-color cells when
+  // this project has no images yet. Same count the column loops on.
+  const n = images.length || PLACEHOLDER_FRAME_COUNT;
   const columnH = n * CELL_H + (n - 1) * CELL_GAP;
   const boxW = CELL_W + PAD_X * 2;
   const boxH = columnH + PAD_Y * 2;
@@ -52,18 +61,31 @@ export default function MiniMap({ images }: { images: string[] }) {
       className="relative mb-6 flex animate-overlay-reveal flex-col overflow-hidden box-border"
       style={{ width: boxW, height: boxH, padding: `${PAD_Y}px ${PAD_X}px` }}
     >
-      {images.map((src, i) => (
-        <div
-          key={src + i}
-          className="relative w-full shrink-0 overflow-hidden opacity-[0.85]"
-          style={{
-            height: CELL_H,
-            marginBottom: i < n - 1 ? CELL_GAP : 0,
-          }}
-        >
-          <Image src={src} alt="" fill sizes="16px" className="object-cover" />
-        </div>
-      ))}
+      {Array.from({ length: n }, (_, i) => {
+        const src = images[i];
+        return (
+          <div
+            key={src ?? i}
+            className="relative w-full shrink-0 overflow-hidden opacity-[0.85]"
+            style={{
+              height: CELL_H,
+              marginBottom: i < n - 1 ? CELL_GAP : 0,
+              // No image yet — fill the cell with the project's flat color.
+              backgroundColor: src ? undefined : color,
+            }}
+          >
+            {src && (
+              <Image
+                src={src}
+                alt=""
+                fill
+                sizes="16px"
+                className="object-cover"
+              />
+            )}
+          </div>
+        );
+      })}
 
       {/* Red viewport frame that travels down the mini-column (+ its wrapped
           continuation). Positioned imperatively in the effect above. */}

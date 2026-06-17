@@ -46,7 +46,11 @@ export default function ProjectView({ project, prev, next }: Props) {
       {/* WebGL gallery fills the page; overlays sit above it. The nested
           <canvas> must stretch to fill regardless of its intrinsic size. */}
       <div className="absolute inset-0 z-[1] [&_canvas]:h-full! [&_canvas]:w-full!">
-        <GalleryCanvas images={project.images} slug={project.slug} />
+        <GalleryCanvas
+          images={project.images}
+          slug={project.slug}
+          color={project.color}
+        />
       </div>
       {/* Invisible hit area over just the gallery column slice so mouse drag
           only triggers there. Geometry mirrors GalleryColumn. */}
@@ -61,7 +65,7 @@ export default function ProjectView({ project, prev, next }: Props) {
         <Fragment key={project.slug}>
           {/* Sit 16px below the fixed SiteHeader so the mini-map clears it. */}
           <div className="pointer-events-none absolute top-[calc(var(--header-height)+16px)] left-10 z-[2]">
-            <MiniMap images={project.images} />
+            <MiniMap images={project.images} color={project.color} />
           </div>
           {/* Mirrors .topLeft's offset so the year lines up with the mini-map.
               Blend lives on this region (not the leaf) so the difference sees

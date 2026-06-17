@@ -6,6 +6,11 @@ import { GalleryCounter } from "./gallery/gallery-counter";
 
 const MAIN_COL = { gridColumn: "4 / 13", height: "100%", paddingLeft: px(16), borderLeft: "1px solid var(--color-line)" } as const;
 
+// One Plane per Project, in order — derived once at module load. `projects` is
+// static, so a stable reference keeps GalleryCanvas's [items] effect from
+// tearing down and rebuilding the renderer on every re-render.
+const GALLERY_ITEMS = projects.map((p) => ({ color: p.color, slug: p.slug, title: p.title }));
+
 /** Top-right quadrant: statement ↑ / status + scroll ↓.
     The gap between the two is the main column's elastic constraint. */
 export function MainTop() {
@@ -42,9 +47,7 @@ export function MainGallery() {
     <div style={{ ...MAIN_COL, position: "relative", paddingBlock: px(16), marginRight: "calc(var(--marge-x) * -1)", display: "flex", flexDirection: "column", minHeight: 0 }}>
       <GalleryCounter />
 
-      <GalleryCanvas
-        items={projects.map((p) => ({ color: p.color, slug: p.slug, title: p.title }))}
-      />
+      <GalleryCanvas items={GALLERY_ITEMS} />
     </div>
   );
 }

@@ -6,14 +6,15 @@ export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
 
-export default function ProjectPage({
+export default async function ProjectPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const project = getProject(params.slug);
+  const { slug } = await params;
+  const project = getProject(slug);
   if (!project) notFound();
 
-  const { prev, next } = getAdjacent(params.slug);
+  const { prev, next } = getAdjacent(slug);
   return <ProjectView project={project} prev={prev} next={next} />;
 }
