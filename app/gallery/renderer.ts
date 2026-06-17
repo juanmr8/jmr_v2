@@ -18,7 +18,9 @@ import gsap from "gsap";
 import { snapTarget, activeIndex } from "./gallery-logic";
 import {
   decayVelocity,
+  entranceOffset,
   layout,
+  loopRank,
   screenRect,
   type GalleryGeometry,
   type ScreenRect,
@@ -34,6 +36,16 @@ const FRICTION = 0.92;
 const MIN_VELOCITY = 0.12;
 const SNAP_DURATION = 0.5;
 const SNAP_EASE = "power3.out";
+
+/* ── Intro feel. The one-time entrance played when the Gallery mounts (the
+   "Intro" — see CONTEXT.md). The spatial magnitudes live in gallery-motion;
+   these are the timing.
+   ENTRANCE_DURATION : per-Plane ease time (s).
+   ENTRANCE_STAGGER  : delay between consecutive Planes (s) — Active first.
+   ENTRANCE_EASE     : settle curve — same deceleration language as the snap. */
+const ENTRANCE_DURATION = 0.7;
+const ENTRANCE_STAGGER = 0.08;
+const ENTRANCE_EASE = "power3.out";
 
 const vertex = /* glsl */ `
   attribute vec3 position;
@@ -111,11 +123,27 @@ export function createGalleryRenderer({
   let geom: GalleryGeometry | null = null;
   let offset = 0;
   let velocity = 0; // steps/sec
-  let mode: "idle" | "momentum" | "snapping" = "idle";
+  let mode: "idle" | "momentum" | "snapping" | "entrance" = "idle";
   let lastActive = 0;
   let snapTween: gsap.core.Tween | null = null;
   let raf: number | null = null;
   let lastTime = 0;
+
+  // ── Intro state. One entrance progress per Plane (0 = off-screen below-right,
+  // 1 = home), layered on the resting layout in draw(). Two Planes start home:
+  // under prefers-reduced-motion every Plane does (the Intro is skipped), and
+  // the leaver — the one Plane resting off-screen-left at offset 0 (loopRank < 0)
+  // — always does, so it can't streak across the viewport mid-entrance.
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const introProgress = colors.map((_, i) => {
+    const offLeft = total > 1 && loopRank(i, total) < 0;
+    return { p: reduceMotion || offLeft ? 1 : 0 };
+  });
+  let introTween: gsap.core.Tween | null = null;
+  let introStarted = false;
 
   function draw(): void {
     // Bail if we have no geometry yet, or the GL context was lost (tab GPU
@@ -123,7 +151,13 @@ export function createGalleryRenderer({
     // program/attribute maps as undefined and throws inside render().
     if (!geom || gl.isContextLost()) return;
     const g = geom; // narrow for the closures below
-    const planes = layout(offset, total, g);
+    // Resting layout + each Plane's live Intro displacement (zero once home, so
+    // this is identity for every frame after the entrance finishes). The offset
+    // Planes drive both the meshes and the overlay rects, so anchors ride along.
+    const planes = layout(offset, total, g).map((p, i) => {
+      const { dx, dy } = entranceOffset(introProgress[i].p, g);
+      return { x: p.x + dx, y: p.y + dy, side: p.side };
+    });
     meshes.forEach((mesh, i) => {
       const p = planes[i];
       mesh.scale.set(p.side, p.side, 1);
@@ -172,6 +206,31 @@ export function createGalleryRenderer({
     );
   }
 
+  // The Intro: ease every Plane home from off-screen, staggered in array order
+  // (Plane 0 is the Active Plane at offset 0, so it lands first; the queue
+  // follows left-to-right). Runs once, on the first real geometry. Scroll is
+  // locked until it completes (input() no-ops while mode === "entrance"). The
+  // leaver and — under reduced motion — every Plane already sit at p=1, so the
+  // tween is a no-op for them. Skipped entirely under reduced motion.
+  function startIntro(): void {
+    if (introStarted || reduceMotion) return;
+    introStarted = true;
+    mode = "entrance";
+    introTween = gsap.to(introProgress, {
+      p: 1,
+      duration: ENTRANCE_DURATION,
+      ease: ENTRANCE_EASE,
+      stagger: ENTRANCE_STAGGER,
+      onComplete() {
+        introProgress.forEach((o) => (o.p = 1));
+        introTween = null;
+        mode = "idle";
+        draw(); // settle on the final resting frame
+      },
+    });
+    ensureLoop();
+  }
+
   function tick(now: number): void {
     const dt = Math.min((now - lastTime) / 1000, 1 / 30); // clamp long stalls
     lastTime = now;
@@ -203,10 +262,14 @@ export function createGalleryRenderer({
       top: height / 2,
     });
     geom = { width, height, gutter: gutterPx };
-    draw(); // redraw immediately even while idle
+    draw(); // redraw immediately even while idle — paints the entrance state
+    // before the tween starts (introProgress=0), so the first frame is the
+    // Planes off-screen, never a flash of the resting layout.
+    startIntro(); // begins on the first real geometry; no-op after the first call
   }
 
   function input(deltaPx: number): void {
+    if (mode === "entrance") return; // Intro locks scroll until it completes
     snapTween?.kill();
     snapTween = null;
     velocity += deltaPx * INPUT_GAIN;
@@ -217,6 +280,7 @@ export function createGalleryRenderer({
   function destroy(): void {
     if (raf !== null) cancelAnimationFrame(raf);
     snapTween?.kill();
+    introTween?.kill();
     // Deliberately NOT calling WEBGL_lose_context.loseContext(): React
     // (StrictMode / Fast Refresh) tears this effect down and re-runs it on the
     // SAME <canvas>, and a canvas only ever hands back its one context. Losing
