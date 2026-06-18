@@ -12,7 +12,7 @@ export default function ProjectNav({
   next: Project | null;
 }) {
   return (
-    <nav className="pointer-events-none absolute right-[var(--marge-x)] bottom-[calc(var(--vw)*16)] left-[var(--marge-x)] z-[2] flex animate-overlay-reveal items-center justify-between text-base text-[#a0a0a0] mix-blend-difference [animation-delay:0.56s]">
+    <nav className="pointer-events-none absolute right-[var(--marge-x)] bottom-[calc(var(--vw)*16)] left-[var(--marge-x)] z-[2] flex animate-overlay-reveal items-center justify-between t-ui text-[#a0a0a0] mix-blend-difference [animation-delay:0.56s]">
       {prev ? (
         <Link href={`/projects/${prev.slug}`} className={navLink}>
           Prev Project
