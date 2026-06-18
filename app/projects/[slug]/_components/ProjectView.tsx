@@ -81,7 +81,7 @@ export default function ProjectView({ project, prev, next }: Props) {
               (not a leaf) so the difference reads against the gallery canvas,
               the same trick the year uses. */}
           <h1
-            className="pointer-events-none absolute left-[var(--marge-x)] top-1/2 z-[2] m-0 animate-overlay-reveal text-base leading-none text-white mix-blend-difference [animation-delay:0.06s]"
+            className="pointer-events-none absolute left-[var(--marge-x)] top-1/2 z-[2] m-0 animate-overlay-reveal t-ui text-white mix-blend-difference [animation-delay:0.06s]"
           >
             {project.title}
           </h1>
@@ -97,7 +97,7 @@ export default function ProjectView({ project, prev, next }: Props) {
               with the Contact link (col 12). Blend lives on this region (not the
               leaf) so the difference sees the canvas as its backdrop. */}
           <div className="pointer-events-none absolute right-[var(--marge-x)] top-[calc(var(--header-height)_+_1rem)] z-[2] text-right mix-blend-difference">
-            <span className="m-0 animate-overlay-reveal text-base leading-none text-white">
+            <span className="m-0 animate-overlay-reveal t-ui text-white">
               {project.year}
             </span>
           </div>
