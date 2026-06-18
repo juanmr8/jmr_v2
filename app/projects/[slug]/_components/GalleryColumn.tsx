@@ -26,6 +26,15 @@ const INTRO_WARP = 1.8;   // warp multiplier vs. BEND, intro only
 // easeOutCubic — fast start, gentle settle, so the warp eases flat near the end.
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
+// Mirror of the 12-col CSS grid (globals.css): canvas 1728, 24 margin, 16 gutter.
+// Lets the WebGL column land on a real grid line instead of a magic fraction.
+const GRID = { canvas: 1728, cols: 12, marge: 24, gutter: 16 } as const;
+const GRID_COL_W =
+  (GRID.canvas - GRID.marge * 2 - GRID.gutter * (GRID.cols - 1)) / GRID.cols;
+/** Left edge of column `n` (1-indexed) as a fraction of viewport width. */
+const colLeftFrac = (n: number) =>
+  (GRID.marge + (n - 1) * (GRID_COL_W + GRID.gutter)) / GRID.canvas;
+
 interface Props {
   images: string[];
   slug: string;
@@ -61,8 +70,9 @@ export default function GalleryColumn({ images, slug, color }: Props) {
   const cyclePx = frameCount * stepPx;
   const frameRatio = THREE.MathUtils.clamp(size.height / cyclePx, 0, 1);
 
-  // Left edge at ~25% of the viewport; every image shares this left edge.
-  const xLeft = -viewport.width / 2 + viewport.width * 0.25;
+  // Left edge locked to grid column 4 (under the "Work" nav); every image
+  // shares this left edge, so the gallery aligns to the menu grid.
+  const xLeft = -viewport.width / 2 + viewport.width * colLeftFrac(4);
   const xCenter = xLeft + W / 2;
 
   // Duplicate the set enough times to fill the loop without gaps (covers
