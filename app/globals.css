@@ -14,6 +14,8 @@
   --color-border:  #222222;
   --color-accent:  #d4ff5a;
 
+  --header-height: 2.3716rem;
+
   /* Neue Haas Grotesk Display Pro is licensed — Geist stands in for now.
      License the real face and swap this ONE line to go live.            */
   --font-display:  var(--font-geist-sans);

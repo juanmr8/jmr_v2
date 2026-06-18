@@ -42,8 +42,9 @@ export default function ProjectView({ project, prev, next }: Props) {
   return (
     <div
       ref={rootRef}
-      className="absolute inset-0 isolate bg-white font-[neue-haas-grotesk-display] font-semibold text-[#141414]"
+      className="absolute inset-0 isolate   bg-white font-[neue-haas-grotesk-display] font-semibold text-[#141414]"
     >
+		<div className="absolute top-[var(--header-height)] z-97 w-full h-px bg-neutral-50 mix-blend-difference"></div>
       {/* WebGL gallery fills the page; overlays sit above it. The nested
           <canvas> must stretch to fill regardless of its intrinsic size. */}
       <div className="absolute inset-0 z-[1] [&_canvas]:h-full! [&_canvas]:w-full!">
@@ -75,31 +76,34 @@ export default function ProjectView({ project, prev, next }: Props) {
           replaying the keyframe reveal even when the textures are cached. */}
       {overlaysReady && (
         <Fragment key={project.slug}>
-          {/* Sit 16px below the fixed SiteHeader so the mini-map clears it. */}
-          <div className="pointer-events-none absolute top-[calc(var(--header-height)+16px)] left-10 z-[2]">
+          {/* Title — one blank line below the menu bar, left edge on --marge-x
+              → flush with the j.mr logo. Blend lives on this positioned element
+              (not a leaf) so the difference reads against the gallery canvas,
+              the same trick the year uses. */}
+          <h1
+            className="pointer-events-none absolute left-[var(--marge-x)] top-1/2 z-[2] m-0 animate-overlay-reveal text-base leading-none text-white mix-blend-difference [animation-delay:0.06s]"
+          >
+            {project.title}
+          </h1>
+
+          {/* Mini-map — directly beneath the title. Kept separate from the title
+              because the mini-map must NOT be differenced — it shows the real
+              thumbnail colors. */}
+          <div className="pointer-events-none absolute left-[var(--marge-x)] top-[calc(var(--header-height)_+_1rem)] z-[2]">
             <MiniMap images={project.images} color={project.color} />
           </div>
-          {/* Mirrors .topLeft's offset so the year lines up with the mini-map.
-              Blend lives on this region (not the leaf) so the difference sees
-              the canvas as its backdrop. */}
-          <div className="pointer-events-none absolute top-[calc(var(--header-height)+16px)] right-10 z-[2] text-right mix-blend-difference">
-            <span className="m-0 animate-overlay-reveal text-base leading-none text-white mix-blend-difference">
+
+          {/* Year — directly under Contact; right edge on --marge-x → aligned
+              with the Contact link (col 12). Blend lives on this region (not the
+              leaf) so the difference sees the canvas as its backdrop. */}
+          <div className="pointer-events-none absolute right-[var(--marge-x)] top-[calc(var(--header-height)_+_1rem)] z-[2] text-right mix-blend-difference">
+            <span className="m-0 animate-overlay-reveal text-base leading-none text-white">
               {project.year}
             </span>
           </div>
-          {/* Title + about share a wrapper so that below 760px they stack as
-              one left-aligned column; on desktop the wrapper is `display:
-              contents` and each keeps its own absolute placement. A positioned
-              + z-indexed wrapper is its own stacking context, which would trap
-              the children's blends — so below 760px the wrapper itself blends. */}
-          <div className="contents max-[760px]:absolute max-[760px]:top-1/2 max-[760px]:left-10 max-[760px]:right-10 max-[760px]:z-[2] max-[760px]:flex max-[760px]:flex-col max-[760px]:mix-blend-difference">
-            {/* Resting geometry stays put across load states so the title never
-                reflows — only opacity/transform animate. */}
-            <h1 className="relative top-1/2 z-[2] m-0 animate-overlay-reveal pl-8 text-base leading-none text-white mix-blend-difference [animation-delay:0.06s] max-[760px]:static max-[760px]:top-auto max-[760px]:mb-[1.15rem] max-[760px]:pl-0">
-              {project.title}
-            </h1>
-            <AboutPanel project={project} />
-          </div>
+
+          {/* About — vertically centred on the right, right edge on --marge-x. */}
+          <AboutPanel project={project} />
 
           <ProjectNav prev={prev} next={next} />
         </Fragment>
