@@ -10,7 +10,7 @@ export default function AboutPanel({ project }: { project: Project }) {
       </p>
       {project.siteUrl && (
         <a
-          className="inline-block animate-overlay-reveal pointer-events-auto t-ui text-white underline underline-offset-[3px] [animation-delay:0.42s] max-[760px]:pt-3!"
+          className="inline-block animate-overlay-reveal pointer-events-auto t-ui text-white underline underline-offset-[3px] [animation-delay:0.42s]"
           href={project.siteUrl}
           target="_blank"
           rel="noreferrer"

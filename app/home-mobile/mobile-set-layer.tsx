@@ -16,7 +16,7 @@ export function MobileSetLayer() {
   const { project, href } = galleryView(activeIndex);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[2] flex -translate-y-1/2 items-center justify-between gap-4 px-4! mix-blend-difference">
+    <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[2] flex -translate-y-1/2 items-center justify-between gap-4 px-4 mix-blend-difference">
       {/* key on the index → the name re-mounts and fades on each crossing. */}
       <span key={activeIndex} className="animate-set-fade text-2xl leading-none text-white">
         {project.title}
