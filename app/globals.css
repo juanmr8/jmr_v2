@@ -42,13 +42,23 @@
 
 /* ════════════════════════════════════════════════════════════
    RESET
-   font: inherit forces every element (button, input, h1…)
-   to inherit the font set on html/body. No more browser
-   default font-size overrides sneaking in.
+   margin/padding live in @layer base so Tailwind's layered
+   spacing utilities (mb-*, p-*, …) win over them — otherwise an
+   unlayered reset out-ranks every utility and silently drops them.
+
+   font: inherit stays UNLAYERED on purpose: it must out-rank the
+   Tailwind font utilities so the unlayered .t-* classes below stay
+   the single source of type. It forces every element (button,
+   input, h1…) to inherit the font set on html/body, so no browser
+   default font-size sneaks in.
 ════════════════════════════════════════════════════════════ */
+@layer base {
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+  }
+}
 *, *::before, *::after {
-  margin: 0;
-  padding: 0;
   font: inherit;
   box-sizing: border-box;
 }

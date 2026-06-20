@@ -58,9 +58,8 @@ export function MobileHome() {
       <MobileSetLayer />
 
       {/* Bottom band: statement on the left half, shared section links on the
-          right. p-4! → 16px inset; the `!` beats the unlayered global reset
-          (* { padding: 0 }), which otherwise wins over layered utilities. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex items-end justify-between gap-4 p-4! mix-blend-difference">
+          right. p-4 → 16px inset. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex items-end justify-between gap-4 p-4 mix-blend-difference">
         <p className="w-1/2 text-xs leading-snug text-white">{STATEMENT}</p>
         <SiteMenuMobileSections className="items-end" />
       </div>
