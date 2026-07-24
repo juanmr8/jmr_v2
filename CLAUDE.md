@@ -4,11 +4,7 @@
 
 ### Issue tracker
 
-Issues are tracked in GitHub Issues (`juanmr8/jmr_v2`) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Default vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Work items live in Linear (team JMR), managed via the Linear MCP — this repo is aligned to the Linear workflow. See `docs/agents/issue-tracker.md`.
 
 ### Domain docs
 

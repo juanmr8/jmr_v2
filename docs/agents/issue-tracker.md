@@ -1,22 +1,28 @@
-# Issue tracker: GitHub
+# Issue tracker: Linear
 
-Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
+Work items for this repo live in Linear (team JMR), not GitHub Issues —
+this repo is aligned to the Linear workflow. Linear's project status is
+the stage of record; use the Linear MCP tools for all operations.
 
 ## Conventions
 
-- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
-- **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
-- **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
-- **Comment on an issue**: `gh issue comment <number> --body "..."`
-- **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
-- **Close**: `gh issue close <number> --comment "..."`
+- Sessions normally start from a Session prompt naming a Linear issue.
+  Otherwise, list the open issues in this product's current Linear project.
+- **Read an issue**: fetch it by identifier, including its comments.
+- **Start work**: set the issue to In Progress and restate scope before
+  touching anything.
+- **Create an issue**: create it in this product's current Linear project,
+  assigned to "me". End it with a Session prompt section.
+- **Close**: set Done with a closing comment recording what was done.
 
-Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
+GitHub is code hosting only — branches, PRs, CI. `gh` stays for PR
+operations; `gh issue` is not used.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitHub issue.
+Create a Linear issue in this product's current Linear project, assigned
+to "me".
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Fetch the Linear issue with its comments via the Linear MCP.
