@@ -1,22 +1,21 @@
-# Issue tracker: GitHub
+# Issue tracker: Linear
 
-Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
+Issues and PRDs for this repo live in Linear — team **JMR**, issue prefix **AD**. Use the Linear MCP tools (`mcp__linear-server__*`) for all operations.
 
 ## Conventions
 
-- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
-- **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
-- **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
-- **Comment on an issue**: `gh issue comment <number> --body "..."`
-- **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
-- **Close**: `gh issue close <number> --comment "..."`
-
-Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
+- **Create an issue**: `save_issue` with `team: "JMR"`, a `title`, and the relevant `project`. Use real newlines in Markdown bodies, not escape sequences.
+- **Read an issue**: `get_issue` with the identifier (e.g. `AD-117`), plus `list_comments` for the discussion.
+- **List issues**: `list_issues` filtered by `project`, `state`, `label`, or `assignee` as appropriate.
+- **Comment on an issue**: `save_comment` with `issueId`.
+- **Apply / remove labels**: `save_issue` with `labels` (note: it replaces the full label set — include the labels you want to keep).
+- **Blocking edges**: use native relations — `save_issue` with `blockedBy` / `blocks` — not text in the description.
+- **Close**: `save_issue` with `state: "Done"` and a closing comment; use `state: "Canceled"` for wontfix.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitHub issue.
+Create Linear issues in the relevant project (team JMR), blockers first so edges can reference real AD identifiers.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Run `get_issue` on the AD identifier and `list_comments` for its thread.

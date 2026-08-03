@@ -4,11 +4,11 @@
 
 ### Issue tracker
 
-Issues are tracked in GitHub Issues (`juanmr8/jmr_v2`) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues are tracked in Linear (team `JMR`, prefix `AD`) via the Linear MCP tools. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-Default vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Linear vocabulary: `AFK` / `Human-in-the-loop` labels, Triage and Canceled statuses. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
