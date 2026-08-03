@@ -27,3 +27,11 @@ _Avoid_: Work item, piece
 **Intro**:
 The animation that plays whenever the Gallery mounts: each Plane slides in from off-screen (below and to the right of its slot) and settles into the resting layout, staggered left-to-right so the strip assembles itself — Active Plane first, then the queue. Scroll input is locked until it finishes; skipped entirely under reduced-motion.
 _Avoid_: Reveal, entrance, splash
+
+**Preloader**:
+The page-level opening sequence that plays once per session before the home page is usable: a field of pulsing circles and triangles at the center collapses until only the center circle and triangle remain; those slide up into their mask and exit, the Hero Pair appears in the bottom-left corner, and the home page's text and two dividing lines animate in. Distinct from the Gallery's Intro — and it precedes it: when the Preloader finishes it triggers the Gallery Intro. Despite the name it is **not** load-gated; it runs on a fixed timeline regardless of asset readiness. Skipped under reduced-motion or when its session flag is already set; scroll is locked while it plays.
+_Avoid_: Intro (reserved for the Gallery), splash, loader (implies load-gating)
+
+**Hero Pair**:
+The circle and triangle that appear in the bottom-left rail as the Preloader's center pair exits — the resting geometric primitives of the home page. A distinct pair from the center shapes: the center pair exits upward into its mask; the Hero Pair appears in place in the corner.
+_Avoid_: Logo, mark

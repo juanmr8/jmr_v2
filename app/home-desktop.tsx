@@ -2,6 +2,7 @@ import { HomeNav } from "./home-nav";
 import { RailTop, RailBottom } from "./home-rail";
 import { MainTop, MainGallery } from "./home-main";
 import { GalleryProvider } from "./gallery/gallery-context";
+import { Preloader } from "./preloader";
 
 /**
  * Creative Practice — Home (desktop, height-constrained).
@@ -20,37 +21,44 @@ export function DesktopHome() {
   const grid = { flex: 1, height: "100%", gridTemplateRows: "minmax(0, 1fr)" } as const;
 
   return (
-    <main
-      style={{
-        height: "100svh",
-        minHeight: "640px",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--color-bg)",
-        overflowX: "hidden",
-      }}
-    >
-      <HomeNav />
+    <>
+      {/* Page-level opening sequence. Self-contained; covers the home with
+          the page background while it plays, then hands off to the resting
+          layout (and the Gallery Intro). See app/preloader. */}
+      <Preloader />
 
-      <section style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
-        <div className="container ds-grid" style={grid}>
-          <RailTop />
-          <MainTop />
-        </div>
-      </section>
+      <main
+        style={{
+          height: "100svh",
+          minHeight: "640px",
+          display: "flex",
+          flexDirection: "column",
+          background: "var(--color-bg)",
+          overflowX: "hidden",
+        }}
+      >
+        <HomeNav />
 
-      {/* Bottom section shares one Gallery context: the renderer pushes the
-          live Active index here, and both RailBottom (Client/Role/href) and
-          MainGallery's counter read it — so they update together, the moment
-          the Active Project changes as you scroll. */}
-      <GalleryProvider>
-        <section style={zone}>
+        <section style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
           <div className="container ds-grid" style={grid}>
-            <RailBottom />
-            <MainGallery />
+            <RailTop />
+            <MainTop />
           </div>
         </section>
-      </GalleryProvider>
-    </main>
+
+        {/* Bottom section shares one Gallery context: the renderer pushes the
+            live Active index here, and both RailBottom (Client/Role/href) and
+            MainGallery's counter read it — so they update together, the moment
+            the Active Project changes as you scroll. */}
+        <GalleryProvider>
+          <section style={zone}>
+            <div className="container ds-grid" style={grid}>
+              <RailBottom />
+              <MainGallery />
+            </div>
+          </section>
+        </GalleryProvider>
+      </main>
+    </>
   );
 }

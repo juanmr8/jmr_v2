@@ -1,0 +1,2 @@
+- I want to create a structure for the animations and presets on UI components for React, where we always follow the same pattern and expose at the top some of the things that you might change when you have a finished UI product. #harvested
+- You could go as far as Forma, where we have some sort of semantics around the element, so it's very easy to go and tweak it without actually touching the code. #harvested
