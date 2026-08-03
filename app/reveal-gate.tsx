@@ -21,8 +21,8 @@ import { createContext, useContext, type ReactNode } from "react";
    The small tier is a single 17-slot cascade (see CASCADE, home-reveal.tsx):
    its last departure is ≈0.64s, so the statement follows right behind it. ── */
 export const PHASE_SMALL = 0;
-export const PHASE_STATEMENT = 0.7;
-export const PHASE_GALLERY = 1.1;
+export const PHASE_STATEMENT = 0.1;
+export const PHASE_GALLERY = 0.3;
 
 const RevealGate = createContext(true);
 

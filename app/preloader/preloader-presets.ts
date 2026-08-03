@@ -178,7 +178,7 @@ export const EMERGE = {
   /** Seconds the triangle's rise starts after the circle's. */
   stagger: 0.22,
   /** Seconds one entity's rise takes (pronounced expo ease-out). */
-  duration: 1.1,
+  duration: 0.7,
 } as const;
 
 /** The frame lines — the homepage's three hairline rules, drawn in ON
@@ -196,9 +196,8 @@ export const LINES = {
       INTRO.hold so it departs the instant the Hero Pair pops in. */
   sweepDelay: 0.2,
   /** Seconds the vertical/mid rules spend travelling, measured from the
-      finale's start. Matched to the emergence's full span (EMERGE.stagger
-      + duration ≈ 1.32) so the lines land with the triangle's rise. The
-      timeline holds until they've landed. */
+      finale's start. The timeline holds until they've landed, so this is
+      also the finale's minimum length. */
   travel: 1.3,
 } as const;
 
@@ -206,7 +205,7 @@ export const LINES = {
     play/pause, restart, timeline scrubber, playback speed. Flip off
     (or delete) once the Preloader ships with its real lifecycle. */
 export const PLAYER = {
-  enabled: true,
+  enabled: false,
   /** Playback-rate choices offered by the bar. */
   speeds: [0.25, 0.5, 1] as readonly number[],
 } as const;
