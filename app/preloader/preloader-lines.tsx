@@ -10,10 +10,10 @@ import { COLOR } from "./preloader-presets";
    The homepage's three hairline rules already exist beneath the
    overlay (nav band bottom, mid divider, main column left). This
    layer re-draws them ON the stage as pure functions of `elapsed`:
-   the top rule sweeps left→right across the main run; the vertical
-   rule and the mid divider travel in from the extreme left / extreme
-   bottom, all three landing at their resting spots exactly as the
-   finale begins. Geometry is measured once from the live DOM (the
+   the top rule sweeps left→right across the main run, completing as
+   the finale begins; the vertical rule and the mid divider depart on
+   that same beat, travelling in from the extreme left / extreme bottom
+   alongside the shapes. Geometry is measured once from the live DOM (the
    [data-home-line] markers — same pattern as the emergence window),
    so when the stage is destroyed the real borders continue the frame
    pixel-for-pixel.

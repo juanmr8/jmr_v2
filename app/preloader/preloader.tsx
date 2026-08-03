@@ -6,7 +6,7 @@ import { PreloaderField } from "./preloader-field";
 import { PreloaderLines } from "./preloader-lines";
 import { RailShape } from "./shapes";
 import { PreloaderPlayer, usePlayerClock } from "./preloader-player";
-import { BLINK, COLOR, EMERGE, PLAYER, PORTAL } from "./preloader-presets";
+import { BLINK, COLOR, EMERGE, LINES, PLAYER, PORTAL } from "./preloader-presets";
 
 /* ════════════════════════════════════════════════════════════
    PRELOADER  ·  art-direction rig (full timeline + player)
@@ -45,6 +45,7 @@ export function Preloader({ onComplete }: { onComplete?: (complete: boolean) => 
   const duration = Math.max(
     portalStart + PORTAL.stagger + PORTAL.duration,
     emergeStart + EMERGE.stagger + EMERGE.duration,
+    portalStart + LINES.travel, // frame lines ride with the finale — hold until they land
   );
 
   const clock = usePlayerClock(duration);
@@ -84,10 +85,10 @@ export function Preloader({ onComplete }: { onComplete?: (complete: boolean) => 
         }}
       >
         {/* The homepage frame, drawn in during the run: the top rule sweeps
-            across the main show; the vertical/mid rules travel in from the
-            screen edges. All three land exactly at portalStart — the frame is
-            standing the moment the heroes begin their slide-up. First in the
-            stage, so the field and the emergence render above the lines. */}
+            across the main show, completing at portalStart; the vertical/mid
+            rules DEPART on that beat, travelling in from the screen edges
+            alongside the shapes' slide-up and rise. First in the stage, so
+            the field and the emergence render above the lines. */}
         <PreloaderLines elapsed={clock.elapsed} end={portalStart} />
         <PreloaderField
           cells={cells}

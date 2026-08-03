@@ -185,17 +185,18 @@ export const EMERGE = {
     the stage during the run so the frame is already standing when the
     stage is destroyed. The top rule (under the menu) sweeps left→right
     across the whole main run; the vertical column rule and the mid
-    divider travel in from the extreme left / extreme bottom edges. ALL
-    THREE land exactly as the finale begins (the heroes' slide-up) — that
-    arrival is computed by the root, not a knob here. Resting geometry is
+    divider travel in from the extreme left / extreme bottom edges. The
+    sweep completes as the finale begins; the travellers DEPART on that
+    same beat — riding in alongside the shapes' slide-up and rise (that
+    moment is computed by the root, not a knob here). Resting geometry is
     measured from the live homepage beneath the overlay (same trick as
     the emergence window), so the cut stays pixel-perfect. */
 export const LINES = {
   /** Seconds into the timeline the top rule sets out — matched to
       INTRO.hold so it departs the instant the Hero Pair pops in. */
   sweepDelay: 0.2,
-  /** Seconds the vertical/mid rules spend travelling. They land at the
-      finale, so this also sets how long before it they depart. */
+  /** Seconds the vertical/mid rules spend travelling, measured from the
+      finale's start. The timeline holds until they've landed. */
   travel: 0.9,
 } as const;
 

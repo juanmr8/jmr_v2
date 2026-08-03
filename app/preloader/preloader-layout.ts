@@ -201,27 +201,21 @@ export function emergeProgress(shape: ShapeKind, t: number): number {
   return sharpOut((t - (shape === "triangle" ? EMERGE.stagger : 0)) / EMERGE.duration);
 }
 
-/** Smooth cubic ease-in-out — the top rule's sweep. It accompanies the
-    whole field show rather than answering the finale, so it breathes
-    (slow–fast–slow) instead of launching like sharpOut. */
-function smoothInOut(p: number): number {
-  const c = Math.min(1, Math.max(0, p));
-  return c < 0.5 ? 4 * c ** 3 : 1 - (-2 * c + 2) ** 3 / 2;
-}
-
 /** Eased 0→1 progress of the top rule's left→right sweep at `elapsed`:
     departs at LINES.sweepDelay, completes exactly at `end` (the finale's
-    start, computed by the root). Pure in elapsed — scrubs like the rest. */
+    start, computed by the root). Same sharp launch-and-settle ease as the
+    shapes and the travellers — one motion language throughout. Pure in
+    elapsed, so it scrubs like the rest. */
 export function sweepProgress(elapsed: number, end: number): number {
-  return smoothInOut((elapsed - LINES.sweepDelay) / (end - LINES.sweepDelay));
+  return sharpOut((elapsed - LINES.sweepDelay) / (end - LINES.sweepDelay));
 }
 
 /** Eased 0→1 progress of a travelling rule (the vertical column rule /
-    the mid divider) at `elapsed`: departs LINES.travel before `end` and
-    lands exactly on it — the same sharp launch-and-settle as the finale
-    it hands off to. */
+    the mid divider) at `elapsed`: departs exactly at `end` (the finale's
+    start) and rides alongside the shapes' slide-up and rise, with the
+    same sharp launch-and-settle ease. */
 export function lineTravel(elapsed: number, end: number): number {
-  return sharpOut((elapsed - (end - LINES.travel)) / LINES.travel);
+  return sharpOut((elapsed - end) / LINES.travel);
 }
 
 /** The one visibility answer: is this cell showing at `elapsed` seconds
