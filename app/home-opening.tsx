@@ -16,7 +16,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Preloader } from "./preloader";
-import { RevealGateProvider } from "./home-reveal";
+import { RevealGateProvider } from "./reveal-gate";
 
 export function HomeOpening({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState(false);

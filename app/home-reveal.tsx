@@ -14,26 +14,16 @@
    move with one voice. power3.out ≈ cubic-bezier(0.165, 0.84, 0.44, 1).
 
    Trigger: each HomeReveal plays when its nearest reveal gate is
-   open. Without a provider the gate defaults to OPEN (plays on
-   mount); the home closes it while the Preloader covers the page
-   (see home-opening.tsx). An explicit `play` prop overrides the gate.
+   open (see reveal-gate.tsx). An explicit `play` prop overrides it.
 ════════════════════════════════════════════════════════════ */
 
-import { createContext, useContext, type ReactNode } from "react";
 import { useReducedMotion } from "motion/react";
 import { ParagraphReveal, type ParagraphRevealProps } from "./animations/paragraph-reveal";
+import { useRevealGate } from "./reveal-gate";
 
 export const REVEAL_DURATION = 0.7;
 export const REVEAL_STAGGER = 0.08;
 export const REVEAL_EASE = [0.165, 0.84, 0.44, 1];
-
-const RevealGate = createContext(true);
-
-/** Scopes the entrance: children's HomeReveals hold below their masks
-    until `open` — the Preloader→homepage handoff drives this. */
-export function RevealGateProvider({ open, children }: { open: boolean; children: ReactNode }) {
-  return <RevealGate.Provider value={open}>{children}</RevealGate.Provider>;
-}
 
 interface HomeRevealProps {
   children: string;
@@ -50,7 +40,7 @@ export function HomeReveal({ children, as = "span", className, delay = 0, play }
   // The ported ParagraphReveal has no reduced-motion guard (house rule:
   // Preloader and Intro both skip) — settle instantly instead of rising.
   const reduce = useReducedMotion();
-  const gate = useContext(RevealGate);
+  const gate = useRevealGate();
   const resolved = play ?? gate;
 
   return (
