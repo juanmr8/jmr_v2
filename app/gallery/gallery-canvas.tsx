@@ -19,7 +19,7 @@ import Link from "next/link";
 import { createGalleryRenderer, type GalleryRenderer } from "./renderer";
 import { useGallery } from "./gallery-context";
 import { projectHref } from "./gallery-logic";
-import { useRevealGate } from "../reveal-gate";
+import { PHASE_GALLERY, useRevealGate } from "../reveal-gate";
 
 /** One Plane's worth of data: its color (for the mesh) and the link it carries.
     Plane i is always Project i, so each anchor's href/label is fixed — only its
@@ -54,8 +54,14 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
   const revealedRef = useRef(revealed);
   revealedRef.current = revealed;
 
+  // On the cut, the Intro is the entrance's LAST phase — small text, then the
+  // statement, then the Planes. Scrubbing the dev player back inside the wait
+  // cancels it (cleanup). The at-mount-already-open case below skips the
+  // phasing: no opening sequence, nothing to sequence against.
   useEffect(() => {
-    if (revealed) rendererRef.current?.startIntro();
+    if (!revealed) return;
+    const id = window.setTimeout(() => rendererRef.current?.startIntro(), PHASE_GALLERY * 1000);
+    return () => window.clearTimeout(id);
   }, [revealed]);
 
   useEffect(() => {

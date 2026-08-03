@@ -1,5 +1,6 @@
 import { px, colW } from "./home-grid";
 import { HomeReveal, REVEAL_STAGGER } from "./home-reveal";
+import { PHASE_STATEMENT } from "./reveal-gate";
 import { STATEMENT } from "./home-data";
 import { projects } from "@/app/projects/data";
 import { GalleryCanvas } from "./gallery/gallery-canvas";
@@ -20,11 +21,12 @@ export function MainTop() {
       <div style={{ position: "relative" }}>
         <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal>↳</HomeReveal></span>
         {/* The statement's LINE animation: the reveal measures the wrapped
-            lines and rises each from its own mask, staggered. Styling stays on
-            the h1 (the reveal inherits it); .reveal-statement scopes the
-            text-indent to the first line only (globals.css). */}
+            lines and rises each from its own mask, staggered — phase two of
+            the entrance, after the small text leads. Styling stays on the h1
+            (the reveal inherits it); .reveal-statement scopes the text-indent
+            to the first line only (globals.css). */}
         <h1 className="t-statement" style={{ color: "var(--color-ink)", textIndent: colW(1) }}>
-          <HomeReveal className="reveal-statement">{STATEMENT}</HomeReveal>
+          <HomeReveal className="reveal-statement" delay={PHASE_STATEMENT}>{STATEMENT}</HomeReveal>
         </h1>
       </div>
 

@@ -13,6 +13,15 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
+/* ── Phases. Seconds after the gate opens that each tier begins, so the page
+   assembles in a legible order: the small text leads, the statement's lines
+   follow, and the Gallery Intro closes. Each phase starts while the previous
+   one is landing (not after it settles) — overlap keeps it flowing; these
+   offsets keep the order unmistakable. Tune here, nowhere else. ── */
+export const PHASE_SMALL = 0;
+export const PHASE_STATEMENT = 0.5;
+export const PHASE_GALLERY = 1.1;
+
 const RevealGate = createContext(true);
 
 /** Scopes the entrance: children hold their entrances until `open`. */
