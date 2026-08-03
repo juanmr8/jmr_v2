@@ -13,17 +13,27 @@
    0.7s · power3.out · 0.08 stagger) so DOM text and WebGL Planes
    move with one voice. power3.out ≈ cubic-bezier(0.165, 0.84, 0.44, 1).
 
-   `play` is the entrance gate: defaults to true (plays on mount)
-   until the Preloader→homepage handoff lands and drives it from the
-   session lifecycle — call sites won't need to change.
+   Trigger: each HomeReveal plays when its nearest reveal gate is
+   open. Without a provider the gate defaults to OPEN (plays on
+   mount); the home closes it while the Preloader covers the page
+   (see home-opening.tsx). An explicit `play` prop overrides the gate.
 ════════════════════════════════════════════════════════════ */
 
+import { createContext, useContext, type ReactNode } from "react";
 import { useReducedMotion } from "motion/react";
 import { ParagraphReveal, type ParagraphRevealProps } from "./animations/paragraph-reveal";
 
 export const REVEAL_DURATION = 0.7;
 export const REVEAL_STAGGER = 0.08;
 export const REVEAL_EASE = [0.165, 0.84, 0.44, 1];
+
+const RevealGate = createContext(true);
+
+/** Scopes the entrance: children's HomeReveals hold below their masks
+    until `open` — the Preloader→homepage handoff drives this. */
+export function RevealGateProvider({ open, children }: { open: boolean; children: ReactNode }) {
+  return <RevealGate.Provider value={open}>{children}</RevealGate.Provider>;
+}
 
 interface HomeRevealProps {
   children: string;
@@ -32,20 +42,22 @@ interface HomeRevealProps {
   className?: string;
   /** Seconds before this element starts — drive per-region cascades via index × REVEAL_STAGGER */
   delay?: number;
-  /** Entrance gate — false holds the text below its mask */
+  /** Entrance override — defaults to the surrounding reveal gate */
   play?: boolean;
 }
 
-export function HomeReveal({ children, as = "span", className, delay = 0, play = true }: HomeRevealProps) {
+export function HomeReveal({ children, as = "span", className, delay = 0, play }: HomeRevealProps) {
   // The ported ParagraphReveal has no reduced-motion guard (house rule:
   // Preloader and Intro both skip) — settle instantly instead of rising.
   const reduce = useReducedMotion();
+  const gate = useContext(RevealGate);
+  const resolved = play ?? gate;
 
   return (
     <ParagraphReveal
       as={as}
       className={className}
-      animate={play || !!reduce}
+      animate={resolved || !!reduce}
       delay={reduce ? 0 : delay}
       duration={reduce ? 0 : REVEAL_DURATION}
       ease={REVEAL_EASE}

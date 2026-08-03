@@ -2,7 +2,7 @@ import { HomeNav } from "./home-nav";
 import { RailTop, RailBottom } from "./home-rail";
 import { MainTop, MainGallery } from "./home-main";
 import { GalleryProvider } from "./gallery/gallery-context";
-import { Preloader } from "./preloader";
+import { HomeOpening } from "./home-opening";
 
 /**
  * Creative Practice — Home (desktop, height-constrained).
@@ -20,13 +20,12 @@ export function DesktopHome() {
   const zone = { flex: "1 1 0", minHeight: 0, display: "flex" } as const;
   const grid = { flex: 1, height: "100%", gridTemplateRows: "minmax(0, 1fr)" } as const;
 
+  // Page-level opening sequence: the Preloader covers the home while it
+  // plays, and the reveal gate holds the text entrances until its cut —
+  // so they play in view, not unseen behind the overlay. See
+  // app/home-opening.tsx and app/preloader.
   return (
-    <>
-      {/* Page-level opening sequence. Self-contained; covers the home with
-          the page background while it plays, then hands off to the resting
-          layout (and the Gallery Intro). See app/preloader. */}
-      <Preloader />
-
+    <HomeOpening>
       <main
         style={{
           height: "100svh",
@@ -59,6 +58,6 @@ export function DesktopHome() {
           </section>
         </GalleryProvider>
       </main>
-    </>
+    </HomeOpening>
   );
 }

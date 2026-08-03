@@ -28,7 +28,7 @@ import { BLINK, COLOR, EMERGE, PLAYER, PORTAL } from "./preloader-presets";
 
 type Rect = { left: number; top: number; width: number; height: number };
 
-export function Preloader() {
+export function Preloader({ onComplete }: { onComplete?: (complete: boolean) => void }) {
   // Stable across renders (seeded) — the layout we art-direct against.
   const cells = useMemo(() => buildField(), []);
 
@@ -62,6 +62,12 @@ export function Preloader() {
   // Timeline complete: the stage goes away and the real homepage — whose
   // rail shows the identical artwork in the identical spot — takes over.
   const destroyed = clock.elapsed >= duration;
+
+  // Report completion live, not latched: scrubbing the dev player back below
+  // the end re-covers the home, and the consumer re-closes its reveal gate.
+  useEffect(() => {
+    onComplete?.(destroyed);
+  }, [destroyed, onComplete]);
 
   return (
     <>
