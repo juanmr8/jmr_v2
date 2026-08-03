@@ -22,9 +22,10 @@ import { BLINK, COLOR, EMERGE, LINES, PLAYER, PORTAL } from "./preloader-presets
    renders beneath this overlay, so the artwork rises exactly where the
    rail's /primitives.svg sits and the destroy is a seamless cut.
 
-   Still to come: the real lifecycle (session flag, scroll lock,
-   reduced-motion skip, handoff to the Gallery Intro) — which will
-   replace the rig's display:none "destroy" with a real unmount.
+   The lifecycle lives in home-opening.tsx: session flag (plays once
+   per session), the reveal-gate handoff to the text + Gallery Intro.
+   Reduced motion snaps the clock to the settled end state. Still to
+   come: replacing the rig's display:none "destroy" with a real unmount.
 ════════════════════════════════════════════════════════════ */
 
 type Rect = { left: number; top: number; width: number; height: number };

@@ -19,7 +19,7 @@ import Link from "next/link";
 import { createGalleryRenderer, type GalleryRenderer } from "./renderer";
 import { useGallery } from "./gallery-context";
 import { projectHref } from "./gallery-logic";
-import { PHASE_GALLERY, useRevealGate } from "../reveal-gate";
+import { PHASE_GALLERY, useRevealMode } from "../reveal-gate";
 
 /** One Plane's worth of data: its color (for the mesh) and the link it carries.
     Plane i is always Project i, so each anchor's href/label is fixed — only its
@@ -47,12 +47,15 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
   onActiveChange.current = setActive;
 
   // The Intro waits for the reveal gate (the Preloader's cut) instead of
-  // playing on mount, unseen behind the overlay. Mirrored into a ref so the
-  // renderer effect can read the live value without re-running on the flip.
+  // playing on mount, unseen behind the overlay. Mirrored into refs so the
+  // renderer effect can read the live values without re-running on the flip.
+  // `instant` = the session-flag skip: no Intro at all, Planes render home.
   const rendererRef = useRef<GalleryRenderer | null>(null);
-  const revealed = useRevealGate();
+  const { open: revealed, instant } = useRevealMode();
   const revealedRef = useRef(revealed);
   revealedRef.current = revealed;
+  const instantRef = useRef(instant);
+  instantRef.current = instant;
 
   // On the cut, the Intro is the entrance's LAST phase — small text, then the
   // statement, then the Planes. Scrubbing the dev player back inside the wait
@@ -72,6 +75,7 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
     const renderer = createGalleryRenderer({
       canvas,
       autoIntro: false, // the reveal gate owns the moment (open by default off-home)
+      skipIntro: instantRef.current, // session-flag skip: settle home, no entrance
       colors: items.map((it) => it.color),
       onActiveChange: (index) => onActiveChange.current(index),
       // Per-frame, no React re-render: write each Plane's live rect straight to

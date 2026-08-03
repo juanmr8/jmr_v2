@@ -80,6 +80,10 @@ export interface GalleryRendererOptions {
       startIntro() when the page is revealed (e.g. the Preloader's cut), so the
       entrance isn't spent unseen behind an overlay. */
   autoIntro?: boolean;
+  /** Skip the Intro outright: Planes start home, scroll unlocked from the
+      first frame — the session-flag skip (the visitor already saw the
+      opening this session). Mirrors the reduced-motion path. */
+  skipIntro?: boolean;
 }
 
 export interface GalleryRenderer {
@@ -102,6 +106,7 @@ export function createGalleryRenderer({
   onActiveChange,
   onFrame,
   autoIntro = true,
+  skipIntro = false,
 }: GalleryRendererOptions): GalleryRenderer {
   const renderer = new Renderer({
     canvas,
@@ -140,21 +145,22 @@ export function createGalleryRenderer({
   let lastTime = 0;
 
   // ── Intro state. One entrance progress per Plane (0 = off-screen below-right,
-  // 1 = home), layered on the resting layout in draw(). Two Planes start home:
-  // under prefers-reduced-motion every Plane does (the Intro is skipped), and
-  // the leaver — the one Plane resting off-screen-left at offset 0 (loopRank < 0)
-  // — always does, so it can't streak across the viewport mid-entrance.
+  // 1 = home), layered on the resting layout in draw(). Some Planes start home:
+  // under prefers-reduced-motion or skipIntro every Plane does (the Intro is
+  // skipped), and the leaver — the one Plane resting off-screen-left at offset 0
+  // (loopRank < 0) — always does, so it can't streak across the viewport
+  // mid-entrance.
   const reduceMotion =
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const introProgress = colors.map((_, i) => {
     const offLeft = total > 1 && loopRank(i, total) < 0;
-    return { p: reduceMotion || offLeft ? 1 : 0 };
+    return { p: reduceMotion || skipIntro || offLeft ? 1 : 0 };
   });
   let introTween: gsap.core.Tween | null = null;
   let introArmed = autoIntro; // startIntro() arms it; the first real geometry fires it
-  let introStarted = false;
+  let introStarted = skipIntro; // skipIntro: nothing to play — scroll unlocked at once
 
   function draw(): void {
     // Bail if we have no geometry yet, or the GL context was lost (tab GPU
