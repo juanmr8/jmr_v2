@@ -49,3 +49,22 @@ export function Shape({ kind, size, style, className }: ShapeProps) {
     </svg>
   );
 }
+
+/** One entity of the final composition — the exact geometry of
+    /primitives.svg split into its two shapes. Each keeps the full
+    415×232 artboard, so stacking both layers reproduces the artwork
+    pixel-for-pixel while each entity can move independently (the
+    emergence rises them one-then-the-other). Fill is the exported
+    file's literal value — not the ink token — so the handoff to the
+    rail's <img src="/primitives.svg"> is exact. */
+export function RailShape({ kind, style }: { kind: ShapeKind; style?: CSSProperties }) {
+  return (
+    <svg viewBox="0 0 415 232" style={{ display: "block", ...style }} aria-hidden>
+      {kind === "circle" ? (
+        <ellipse cx="105.775" cy="127.576" rx="104" ry="103.5" fill="#F9FAFB" />
+      ) : (
+        <path d="M289.775 24.0762L409.775 231.076H169.775L289.775 24.0762Z" fill="#F9FAFB" />
+      )}
+    </svg>
+  );
+}
