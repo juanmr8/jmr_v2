@@ -22,9 +22,10 @@ import { BLINK, COLOR, EMERGE, LINES, PLAYER, PORTAL } from "./preloader-presets
    renders beneath this overlay, so the artwork rises exactly where the
    rail's /primitives.svg sits and the destroy is a seamless cut.
 
-   Still to come: the real lifecycle (session flag, scroll lock,
-   reduced-motion skip, handoff to the Gallery Intro) — which will
-   replace the rig's display:none "destroy" with a real unmount.
+   The lifecycle lives in home-opening.tsx: session flag (plays once
+   per session), the reveal-gate handoff to the text + Gallery Intro.
+   Reduced motion snaps the clock to the settled end state. Still to
+   come: replacing the rig's display:none "destroy" with a real unmount.
 ════════════════════════════════════════════════════════════ */
 
 type Rect = { left: number; top: number; width: number; height: number };
@@ -51,13 +52,25 @@ export function Preloader({ onComplete }: { onComplete?: (complete: boolean) => 
   const clock = usePlayerClock(duration);
 
   // The emergence window: the homepage rail's actual primitives image
-  // beneath us, measured once on mount.
+  // beneath us. Its height is intrinsic (height:auto), so on a cold load the
+  // rect is 0px tall until the SVG arrives — measuring once at mount would
+  // leave a zero-height mask and the finale would play invisibly. Observe the
+  // image instead: measure now if it's already laid out, re-measure when its
+  // box gets its real size (the emergence only starts ~2s in, so a late load
+  // still lands well before it matters).
   const [railRect, setRailRect] = useState<Rect | null>(null);
   useEffect(() => {
     const img = document.querySelector('main img[src="/primitives.svg"]');
     if (!(img instanceof HTMLElement)) return;
-    const r = img.getBoundingClientRect();
-    setRailRect({ left: r.left, top: r.top, width: r.width, height: r.height });
+    const measure = () => {
+      const r = img.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return; // not loaded yet — the observer re-fires
+      setRailRect({ left: r.left, top: r.top, width: r.width, height: r.height });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(img);
+    return () => observer.disconnect();
   }, []);
 
   const emergeT = clock.elapsed - emergeStart;
