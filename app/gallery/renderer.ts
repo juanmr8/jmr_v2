@@ -91,13 +91,6 @@ export interface GalleryRenderer {
       With autoIntro:false this is the trigger; scroll stays locked until the
       Intro has played. */
   startIntro(): void;
-  /** Skip the Intro outright: jump every Plane home and unlock scroll — the
-      session-flag skip (the visitor already saw the opening this session).
-      Mirrors the reduced-motion path. A method rather than a creation option
-      so the caller can decide AFTER mount: the skip flag lives in
-      sessionStorage, which is only readable client-side, after the renderer
-      effect may already have run. Idempotent; a later startIntro() no-ops. */
-  settleHome(): void;
   /** Stop the RAF loop and any running tween. The GL context is left intact so
       a re-mounted effect can reuse the same canvas (see destroy() body). */
   destroy(): void;
@@ -256,16 +249,6 @@ export function createGalleryRenderer({
     maybeStartIntro();
   }
 
-  function settleHome(): void {
-    introTween?.kill();
-    introTween = null;
-    introArmed = true;
-    introStarted = true; // nothing to play — scroll unlocked at once
-    introProgress.forEach((o) => (o.p = 1));
-    mode = "idle";
-    draw(); // no-op until geometry lands; the first resize() then draws home
-  }
-
   function tick(now: number): void {
     const dt = Math.min((now - lastTime) / 1000, 1 / 30); // clamp long stalls
     lastTime = now;
@@ -325,5 +308,5 @@ export function createGalleryRenderer({
     // actually own and stop here.
   }
 
-  return { resize, input, startIntro, settleHome, destroy };
+  return { resize, input, startIntro, destroy };
 }

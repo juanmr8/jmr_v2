@@ -19,7 +19,7 @@ import Link from "next/link";
 import { createGalleryRenderer, type GalleryRenderer } from "./renderer";
 import { useGallery } from "./gallery-context";
 import { projectHref } from "./gallery-logic";
-import { PHASE_GALLERY, useRevealMode } from "../reveal-gate";
+import { PHASE_GALLERY, useRevealGate } from "../reveal-gate";
 
 /** One Plane's worth of data: its color (for the mesh) and the link it carries.
     Plane i is always Project i, so each anchor's href/label is fixed — only its
@@ -47,35 +47,22 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
   onActiveChange.current = setActive;
 
   // The Intro waits for the reveal gate (the Preloader's cut) instead of
-  // playing on mount, unseen behind the overlay. Mirrored into refs so the
-  // renderer effect can read the live values without re-running on the flip.
-  // `instant` = the session-flag skip: no Intro at all, Planes render home.
+  // playing on mount, unseen behind the overlay. Mirrored into a ref so the
+  // renderer effect can read the live value without re-running on the flip.
   const rendererRef = useRef<GalleryRenderer | null>(null);
-  const { open: revealed, instant } = useRevealMode();
+  const revealed = useRevealGate();
   const revealedRef = useRef(revealed);
   revealedRef.current = revealed;
-  const instantRef = useRef(instant);
-  instantRef.current = instant;
 
   // On the cut, the Intro is the entrance's LAST phase — small text, then the
   // statement, then the Planes. Scrubbing the dev player back inside the wait
   // cancels it (cleanup). The at-mount-already-open case below skips the
   // phasing: no opening sequence, nothing to sequence against.
-  //
-  // The session-flag skip settles instead: no entrance, Planes home at once.
-  // Decided HERE, not at renderer creation — the flag is read in a layout
-  // effect after mount, and the creation effect can flush before that
-  // decision's re-render, so a creation-time read races it. settleHome()
-  // latches; the re-run after `instant` releases no-ops its startIntro.
   useEffect(() => {
     if (!revealed) return;
-    if (instant) {
-      rendererRef.current?.settleHome();
-      return;
-    }
     const id = window.setTimeout(() => rendererRef.current?.startIntro(), PHASE_GALLERY * 1000);
     return () => window.clearTimeout(id);
-  }, [revealed, instant]);
+  }, [revealed]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -118,11 +105,8 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
     sync();
     // Gate already open at mount (no opening sequence, or a remount after the
     // cut — e.g. Fast Refresh): start immediately; the [revealed] effect only
-    // fires on the flip. Inside the instant window, settle instead.
-    if (revealedRef.current) {
-      if (instantRef.current) renderer.settleHome();
-      else renderer.startIntro();
-    }
+    // fires on the flip.
+    if (revealedRef.current) renderer.startIntro();
 
     const observer = new ResizeObserver(sync);
     observer.observe(container);

@@ -20,7 +20,7 @@
 import { useRef } from "react";
 import { useReducedMotion } from "motion/react";
 import { ParagraphReveal, type ParagraphRevealProps } from "./animations/paragraph-reveal";
-import { useRevealMode } from "./reveal-gate";
+import { useRevealGate } from "./reveal-gate";
 
 export const REVEAL_DURATION = 0.7;
 /** Per-slot step of the small-tier cascade. Tighter than the Intro's 0.08:
@@ -54,17 +54,14 @@ interface HomeRevealProps {
 export function HomeReveal({ children, as = "span", className, delay = 0, play }: HomeRevealProps) {
   // The ported ParagraphReveal has no reduced-motion guard (house rule:
   // Preloader and Intro both skip) — settle instantly instead of rising.
-  // `instant` (the session-flag skip) settles the same way: the visitor
-  // already saw the opening, the page renders resting.
   const reduce = useReducedMotion();
-  const { open, instant } = useRevealMode();
-  const resolved = play ?? open;
-  const still = !!reduce || instant;
+  const gate = useRevealGate();
+  const resolved = play ?? gate;
 
   // The delay choreographs the OPENING cascade only. A mount that finds the
   // gate already open is a later re-rise (RailBottom's keyed Active values,
   // Fast Refresh) — it plays immediately instead of waiting out its slot.
-  const openAtMount = useRef(open);
+  const openAtMount = useRef(gate);
   const entranceDelay = openAtMount.current ? 0 : delay;
 
   return (
@@ -72,8 +69,8 @@ export function HomeReveal({ children, as = "span", className, delay = 0, play }
       as={as}
       className={className}
       animate={resolved || !!reduce}
-      delay={still ? 0 : entranceDelay}
-      duration={still ? 0 : REVEAL_DURATION}
+      delay={reduce ? 0 : entranceDelay}
+      duration={reduce ? 0 : REVEAL_DURATION}
       ease={REVEAL_EASE}
     >
       {children}

@@ -9,19 +9,19 @@
    completes — the same instant as the display:none cut.
 
    Once per session: completion writes a sessionStorage flag; a mount
-   that finds the flag skips the Preloader entirely and opens the gate
-   in `instant` mode, so the page renders straight in its resting state
-   (AD-121) — no overlay, no entrances. The check runs in a layout
-   effect (sessionStorage doesn't exist on the server), so the first
-   client render matches the SSR HTML and the skip lands before paint.
-   `instant` is released right after the settle, so later in-page
-   entrances (RailBottom's keyed Active values) still animate.
+   that finds the flag skips the Preloader OVERLAY only — the blinking
+   field doesn't replay, but the gate opens at once so the entrances
+   (text cascade, statement, Gallery Intro) still slide up (AD-121).
+   The check runs in a layout effect (sessionStorage doesn't exist on
+   the server), so the first client render matches the SSR HTML and
+   the decision lands before paint — the entrances start from their
+   hidden state, never flashing the resting page.
 
    Still to come: a real unmount at the end of the timeline instead
    of the rig's display:none destroy.
 ════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useCallback, useLayoutEffect, useState, type ReactNode } from "react";
 import { Preloader } from "./preloader";
 import { RevealGateProvider } from "./reveal-gate";
 
@@ -31,8 +31,6 @@ export function HomeOpening({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState(false);
   // null = undecided (SSR + hydration render, which must match the server).
   const [skip, setSkip] = useState<boolean | null>(null);
-  // Flipped after the skip has settled — closes the instant window.
-  const [settled, setSettled] = useState(false);
 
   useLayoutEffect(() => {
     try {
@@ -41,10 +39,6 @@ export function HomeOpening({ children }: { children: ReactNode }) {
       setSkip(false); // storage blocked → just play
     }
   }, []);
-
-  useEffect(() => {
-    if (skip) setSettled(true);
-  }, [skip]);
 
   // Live, not latched (see Preloader): completion both opens the gate and
   // stamps the session, so the NEXT mount in this session skips.
@@ -62,7 +56,7 @@ export function HomeOpening({ children }: { children: ReactNode }) {
   // than the children shifting position, so the hydrated homepage (and its
   // WebGL canvas) is never remounted by the decision.
   return (
-    <RevealGateProvider open={skip ? true : revealed} instant={skip === true && !settled}>
+    <RevealGateProvider open={skip ? true : revealed}>
       {skip !== true && <Preloader onComplete={onComplete} />}
       {children}
     </RevealGateProvider>
