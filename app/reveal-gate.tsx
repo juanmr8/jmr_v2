@@ -19,10 +19,10 @@ import { createContext, useContext, type ReactNode } from "react";
    one is landing (not after it settles) — overlap keeps it flowing; these
    offsets keep the order unmistakable. Tune here, nowhere else.
    The small tier is a single 17-slot cascade (see CASCADE, home-reveal.tsx):
-   its last departure is ≈0.8s, so the statement follows right behind it. ── */
+   its last departure is ≈0.64s, so the statement follows right behind it. ── */
 export const PHASE_SMALL = 0;
-export const PHASE_STATEMENT = 0.9;
-export const PHASE_GALLERY = 1.5;
+export const PHASE_STATEMENT = 0.7;
+export const PHASE_GALLERY = 1.1;
 
 const RevealGate = createContext(true);
 

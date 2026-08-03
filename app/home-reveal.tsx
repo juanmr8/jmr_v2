@@ -25,8 +25,8 @@ import { useRevealGate } from "./reveal-gate";
 export const REVEAL_DURATION = 0.7;
 /** Per-slot step of the small-tier cascade. Tighter than the Intro's 0.08:
     the tier is ONE 17-slot sweep (see CASCADE), and this keeps its full
-    span of departures ≈ 0.8s so the statement still clearly follows. */
-export const REVEAL_STAGGER = 0.05;
+    span of departures ≈ 0.64s so the statement still clearly follows. */
+export const REVEAL_STAGGER = 0.04;
 export const REVEAL_EASE = [0.165, 0.84, 0.44, 1];
 
 /** Small-tier cascade: one GLOBAL slot sequence sweeping the page top to
