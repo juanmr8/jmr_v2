@@ -16,9 +16,10 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { createGalleryRenderer } from "./renderer";
+import { createGalleryRenderer, type GalleryRenderer } from "./renderer";
 import { useGallery } from "./gallery-context";
 import { projectHref } from "./gallery-logic";
+import { PHASE_GALLERY, useRevealGate } from "../reveal-gate";
 
 /** One Plane's worth of data: its color (for the mesh) and the link it carries.
     Plane i is always Project i, so each anchor's href/label is fixed — only its
@@ -45,6 +46,24 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
   const onActiveChange = useRef(setActive);
   onActiveChange.current = setActive;
 
+  // The Intro waits for the reveal gate (the Preloader's cut) instead of
+  // playing on mount, unseen behind the overlay. Mirrored into a ref so the
+  // renderer effect can read the live value without re-running on the flip.
+  const rendererRef = useRef<GalleryRenderer | null>(null);
+  const revealed = useRevealGate();
+  const revealedRef = useRef(revealed);
+  revealedRef.current = revealed;
+
+  // On the cut, the Intro is the entrance's LAST phase — small text, then the
+  // statement, then the Planes. Scrubbing the dev player back inside the wait
+  // cancels it (cleanup). The at-mount-already-open case below skips the
+  // phasing: no opening sequence, nothing to sequence against.
+  useEffect(() => {
+    if (!revealed) return;
+    const id = window.setTimeout(() => rendererRef.current?.startIntro(), PHASE_GALLERY * 1000);
+    return () => window.clearTimeout(id);
+  }, [revealed]);
+
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
@@ -52,6 +71,7 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
 
     const renderer = createGalleryRenderer({
       canvas,
+      autoIntro: false, // the reveal gate owns the moment (open by default off-home)
       colors: items.map((it) => it.color),
       onActiveChange: (index) => onActiveChange.current(index),
       // Per-frame, no React re-render: write each Plane's live rect straight to
@@ -81,7 +101,13 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
       renderer.resize(width, height, probe.getBoundingClientRect().width);
     };
 
+    rendererRef.current = renderer;
     sync();
+    // Gate already open at mount (no opening sequence, or a remount after the
+    // cut — e.g. Fast Refresh): start immediately; the [revealed] effect only
+    // fires on the flip.
+    if (revealedRef.current) renderer.startIntro();
+
     const observer = new ResizeObserver(sync);
     observer.observe(container);
 
@@ -101,6 +127,7 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
       window.removeEventListener("wheel", onWheel);
       observer.disconnect();
       probe.remove();
+      rendererRef.current = null;
       renderer.destroy();
     };
   }, [items]);

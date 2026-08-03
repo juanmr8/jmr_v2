@@ -75,6 +75,11 @@ export interface GalleryRendererOptions {
       Plane order), so the DOM link overlays can track the strip per frame —
       ADR-0001: anchors follow the Planes, no in-canvas hit-testing. */
   onFrame?: (rects: ScreenRect[]) => void;
+  /** Start the Intro automatically on the first real geometry (default). Pass
+      false when an opening sequence owns that moment — the consumer calls
+      startIntro() when the page is revealed (e.g. the Preloader's cut), so the
+      entrance isn't spent unseen behind an overlay. */
+  autoIntro?: boolean;
 }
 
 export interface GalleryRenderer {
@@ -82,6 +87,10 @@ export interface GalleryRenderer {
   resize(width: number, height: number, gutterPx: number): void;
   /** Feed a scroll/trackpad delta (px). Cancels any snap and adds momentum. */
   input(deltaPx: number): void;
+  /** Begin the Intro — idempotent, and held until the first real geometry.
+      With autoIntro:false this is the trigger; scroll stays locked until the
+      Intro has played. */
+  startIntro(): void;
   /** Stop the RAF loop and any running tween. The GL context is left intact so
       a re-mounted effect can reuse the same canvas (see destroy() body). */
   destroy(): void;
@@ -92,6 +101,7 @@ export function createGalleryRenderer({
   colors,
   onActiveChange,
   onFrame,
+  autoIntro = true,
 }: GalleryRendererOptions): GalleryRenderer {
   const renderer = new Renderer({
     canvas,
@@ -143,6 +153,7 @@ export function createGalleryRenderer({
     return { p: reduceMotion || offLeft ? 1 : 0 };
   });
   let introTween: gsap.core.Tween | null = null;
+  let introArmed = autoIntro; // startIntro() arms it; the first real geometry fires it
   let introStarted = false;
 
   function draw(): void {
@@ -208,13 +219,15 @@ export function createGalleryRenderer({
 
   // The Intro: ease every Plane home from off-screen, staggered in array order
   // (Plane 0 is the Active Plane at offset 0, so it lands first; the queue
-  // follows left-to-right). Runs once, on the first real geometry. Scroll is
-  // locked until it completes (input() no-ops while mode === "entrance"). The
-  // leaver and — under reduced motion — every Plane already sit at p=1, so the
-  // tween is a no-op for them. Skipped entirely under reduced motion.
-  function startIntro(): void {
-    if (introStarted || reduceMotion) return;
+  // follows left-to-right). Runs once, when BOTH conditions hold: armed
+  // (autoIntro, or an external startIntro() call — e.g. the Preloader's cut)
+  // and real geometry exists. Scroll is locked until it completes (input()
+  // no-ops until the Intro has played). The leaver and — under reduced motion —
+  // every Plane already sit at p=1, so the Intro is skipped entirely there.
+  function maybeStartIntro(): void {
+    if (!introArmed || introStarted || !geom) return;
     introStarted = true;
+    if (reduceMotion) return; // Planes already home; just unlock scroll
     mode = "entrance";
     introTween = gsap.to(introProgress, {
       p: 1,
@@ -229,6 +242,11 @@ export function createGalleryRenderer({
       },
     });
     ensureLoop();
+  }
+
+  function startIntro(): void {
+    introArmed = true;
+    maybeStartIntro();
   }
 
   function tick(now: number): void {
@@ -265,11 +283,11 @@ export function createGalleryRenderer({
     draw(); // redraw immediately even while idle — paints the entrance state
     // before the tween starts (introProgress=0), so the first frame is the
     // Planes off-screen, never a flash of the resting layout.
-    startIntro(); // begins on the first real geometry; no-op after the first call
+    maybeStartIntro(); // fires once armed AND real geometry exists
   }
 
   function input(deltaPx: number): void {
-    if (mode === "entrance") return; // Intro locks scroll until it completes
+    if (mode === "entrance" || !introStarted) return; // scroll locked until the Intro has played
     snapTween?.kill();
     snapTween = null;
     velocity += deltaPx * INPUT_GAIN;
@@ -290,5 +308,5 @@ export function createGalleryRenderer({
     // actually own and stop here.
   }
 
-  return { resize, input, destroy };
+  return { resize, input, startIntro, destroy };
 }

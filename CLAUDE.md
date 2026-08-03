@@ -4,7 +4,11 @@
 
 ### Issue tracker
 
-Work items live in Linear (team JMR), managed via the Linear MCP — this repo is aligned to the Linear workflow. See `docs/agents/issue-tracker.md`.
+Issues are tracked in Linear (team `JMR`, prefix `AD`) via the Linear MCP tools. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Linear vocabulary: `AFK` / `Human-in-the-loop` labels, Triage and Canceled statuses. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 

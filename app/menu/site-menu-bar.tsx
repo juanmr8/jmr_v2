@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { px } from "../home-grid";
+import { CASCADE, HomeReveal, REVEAL_STAGGER } from "../home-reveal";
 import { BRAND, NAV_LINKS, CONTACT } from "./menu-data";
 
 /**
@@ -12,8 +13,20 @@ import { BRAND, NAV_LINKS, CONTACT } from "./menu-data";
  * Logo / Contact carry `pointer-events-auto` so they stay clickable when the
  * consumer makes the overlay `pointer-events-none`; on the in-flow home this
  * is a no-op (auto is already the default).
+ *
+ * `reveal` turns on the homepage entrance: each label rises inside its own
+ * mask, cascading left-to-right. Every other surface renders plain text.
  */
-export function SiteMenuBar() {
+export function SiteMenuBar({ reveal = false }: { reveal?: boolean }) {
+  const label = (text: string, slot: number, className?: string) =>
+    reveal ? (
+      <HomeReveal delay={(CASCADE.nav + slot) * REVEAL_STAGGER} className={className}>
+        {text}
+      </HomeReveal>
+    ) : (
+      text
+    );
+
   return (
     <div className="container ds-grid" style={{ alignItems: "center", paddingBlock: px(16) }}>
       <Link
@@ -21,13 +34,13 @@ export function SiteMenuBar() {
         className="t-logo pointer-events-auto"
         style={{ gridColumn: "1 / 4", color: "var(--color-ink)", textDecoration: "none" }}
       >
-        {BRAND.label}
+        {label(BRAND.label, 0)}
       </Link>
 
       <nav style={{ gridColumn: "4 / 10", display: "flex", gap: px(15), alignItems: "center" }}>
-        {NAV_LINKS.map((l) => (
+        {NAV_LINKS.map((l, i) => (
           <span key={l.label} className="t-ui" style={{ color: l.active ? "var(--color-ink)" : "var(--color-muted)" }}>
-            {l.label}
+            {label(l.label, i + 1)}
           </span>
         ))}
       </nav>
@@ -43,7 +56,9 @@ export function SiteMenuBar() {
           textUnderlineOffset: px(3),
         }}
       >
-        {CONTACT.label}
+        {/* Underline can't propagate into the reveal's absolutely-positioned
+            animated layer — .reveal-underline (globals.css) re-applies it there. */}
+        {label(CONTACT.label, NAV_LINKS.length + 1, "reveal-underline")}
       </span>
     </div>
   );

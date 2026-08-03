@@ -244,6 +244,19 @@ html {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* No visible scrollbar, EVER — on any element, either axis. The home is a
+   locked single screen and the scrolling surfaces (project detail) are
+   art-directed without one. Universal (not just html) because the browser
+   hangs the document bar off whichever box overflows — html, body, or an
+   inner scroller. Scrolling itself still works; only the bar is hidden. */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 /* ════════════════════════════════════════════════════════════
    LAYOUT UTILITIES
 ════════════════════════════════════════════════════════════ */
@@ -256,4 +269,32 @@ html {
   display: grid;
   grid-template-columns: repeat(var(--col-l), var(--col));
   column-gap: var(--gutter);
+}
+
+/* ════════════════════════════════════════════════════════════
+   HOME REVEAL  ·  underline continuity
+   ─────────────────────────────────────────────────────────
+   text-decoration doesn't propagate into out-of-flow children,
+   so an underlined label loses it on ParagraphReveal's absolutely
+   positioned animated layer. This re-applies it to every span in
+   the reveal (ghost + sr-only copies are hidden, so no doubling).
+   Offset matches the menu's px(3).
+════════════════════════════════════════════════════════════ */
+.reveal-underline span {
+  text-decoration: underline;
+  text-underline-offset: calc(var(--vw) * 3);
+}
+
+/* ════════════════════════════════════════════════════════════
+   HOME REVEAL  ·  statement indent continuity
+   ─────────────────────────────────────────────────────────
+   The h1's text-indent shapes only its FIRST line (the ↳ marker
+   sits in that indent). The reveal's ghost is one wrapped block, so
+   it indents natively — but each animated line is its own block and
+   would ALL inherit the indent. Zero it on every line but the first.
+   (.absolute is the reveal's animated layer; its children are the
+   per-line masks.)
+════════════════════════════════════════════════════════════ */
+.reveal-statement .absolute > span:not(:first-child) {
+  text-indent: 0;
 }

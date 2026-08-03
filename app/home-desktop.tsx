@@ -2,6 +2,7 @@ import { HomeNav } from "./home-nav";
 import { RailTop, RailBottom } from "./home-rail";
 import { MainTop, MainGallery } from "./home-main";
 import { GalleryProvider } from "./gallery/gallery-context";
+import { HomeOpening } from "./home-opening";
 
 /**
  * Creative Practice — Home (desktop, height-constrained).
@@ -19,38 +20,46 @@ export function DesktopHome() {
   const zone = { flex: "1 1 0", minHeight: 0, display: "flex" } as const;
   const grid = { flex: 1, height: "100%", gridTemplateRows: "minmax(0, 1fr)" } as const;
 
+  // Page-level opening sequence: the Preloader covers the home while it
+  // plays, and the reveal gate holds the text entrances until its cut —
+  // so they play in view, not unseen behind the overlay. See
+  // app/home-opening.tsx and app/preloader.
   return (
-    <main
-      style={{
-        height: "100svh",
-        minHeight: "640px",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--color-bg)",
-        overflowX: "hidden",
-      }}
-    >
-      <HomeNav />
+    <HomeOpening>
+      <main
+        style={{
+          height: "100svh",
+          minHeight: "640px",
+          display: "flex",
+          flexDirection: "column",
+          background: "var(--color-bg)",
+          overflowX: "hidden",
+        }}
+      >
+        <HomeNav />
 
-      <section style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
-        <div className="container ds-grid" style={grid}>
-          <RailTop />
-          <MainTop />
-        </div>
-      </section>
-
-      {/* Bottom section shares one Gallery context: the renderer pushes the
-          live Active index here, and both RailBottom (Client/Role/href) and
-          MainGallery's counter read it — so they update together, the moment
-          the Active Project changes as you scroll. */}
-      <GalleryProvider>
-        <section style={zone}>
+        {/* data-home-line: measured by the Preloader's lines layer, which
+            re-draws this divider on the stage and lands it here before the cut. */}
+        <section data-home-line="divider" style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
           <div className="container ds-grid" style={grid}>
-            <RailBottom />
-            <MainGallery />
+            <RailTop />
+            <MainTop />
           </div>
         </section>
-      </GalleryProvider>
-    </main>
+
+        {/* Bottom section shares one Gallery context: the renderer pushes the
+            live Active index here, and both RailBottom (Client/Role/href) and
+            MainGallery's counter read it — so they update together, the moment
+            the Active Project changes as you scroll. */}
+        <GalleryProvider>
+          <section style={zone}>
+            <div className="container ds-grid" style={grid}>
+              <RailBottom />
+              <MainGallery />
+            </div>
+          </section>
+        </GalleryProvider>
+      </main>
+    </HomeOpening>
   );
 }
