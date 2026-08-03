@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { px } from "../home-grid";
-import { HomeReveal, REVEAL_STAGGER } from "../home-reveal";
+import { CASCADE, HomeReveal, REVEAL_STAGGER } from "../home-reveal";
 import { BRAND, NAV_LINKS, CONTACT } from "./menu-data";
 
 /**
@@ -20,7 +20,7 @@ import { BRAND, NAV_LINKS, CONTACT } from "./menu-data";
 export function SiteMenuBar({ reveal = false }: { reveal?: boolean }) {
   const label = (text: string, slot: number, className?: string) =>
     reveal ? (
-      <HomeReveal delay={slot * REVEAL_STAGGER} className={className}>
+      <HomeReveal delay={(CASCADE.nav + slot) * REVEAL_STAGGER} className={className}>
         {text}
       </HomeReveal>
     ) : (

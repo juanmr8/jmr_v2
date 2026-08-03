@@ -17,10 +17,12 @@ import { createContext, useContext, type ReactNode } from "react";
    assembles in a legible order: the small text leads, the statement's lines
    follow, and the Gallery Intro closes. Each phase starts while the previous
    one is landing (not after it settles) — overlap keeps it flowing; these
-   offsets keep the order unmistakable. Tune here, nowhere else. ── */
+   offsets keep the order unmistakable. Tune here, nowhere else.
+   The small tier is a single 17-slot cascade (see CASCADE, home-reveal.tsx):
+   its last departure is ≈0.8s, so the statement follows right behind it. ── */
 export const PHASE_SMALL = 0;
-export const PHASE_STATEMENT = 0.5;
-export const PHASE_GALLERY = 1.1;
+export const PHASE_STATEMENT = 0.9;
+export const PHASE_GALLERY = 1.5;
 
 const RevealGate = createContext(true);
 

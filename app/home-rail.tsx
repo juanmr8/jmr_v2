@@ -1,7 +1,7 @@
 "use client";
 
 import { px } from "./home-grid";
-import { HomeReveal, REVEAL_STAGGER } from "./home-reveal";
+import { CASCADE, HomeReveal, REVEAL_STAGGER } from "./home-reveal";
 import { useActiveView } from "./gallery/gallery-context";
 
 const RAIL = { gridColumn: "1 / 4", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) } as const;
@@ -20,12 +20,12 @@ export function RailTop() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: px(8) }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span className="t-ui" style={labelMuted}><HomeReveal>Services:</HomeReveal></span>
-          <span className="t-ui" style={valueInk}><HomeReveal delay={REVEAL_STAGGER}>Design, Development</HomeReveal></span>
+          <span className="t-ui" style={labelMuted}><HomeReveal delay={CASCADE.railTop * REVEAL_STAGGER}>Services:</HomeReveal></span>
+          <span className="t-ui" style={valueInk}><HomeReveal delay={(CASCADE.railTop + 1) * REVEAL_STAGGER}>Design, Development</HomeReveal></span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
-          <span className="t-ui" style={valueInk}><HomeReveal delay={2 * REVEAL_STAGGER}>Instagram</HomeReveal></span>
-          <span className="t-ui" style={valueInk}><HomeReveal delay={3 * REVEAL_STAGGER}>Medium</HomeReveal></span>
+          <span className="t-ui" style={valueInk}><HomeReveal delay={(CASCADE.railTop + 2) * REVEAL_STAGGER}>Instagram</HomeReveal></span>
+          <span className="t-ui" style={valueInk}><HomeReveal delay={(CASCADE.railTop + 3) * REVEAL_STAGGER}>Medium</HomeReveal></span>
         </div>
       </div>
     </div>
@@ -45,15 +45,15 @@ export function RailBottom() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: px(8) }}>
         <div style={{ display: "flex", flexDirection: "column", gap: px(12) }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span className="t-ui" style={labelMuted}><HomeReveal>Client:</HomeReveal></span>
-            <span className="t-ui" style={valueInk}><HomeReveal key={href} delay={REVEAL_STAGGER}>{project.client}</HomeReveal></span>
+            <span className="t-ui" style={labelMuted}><HomeReveal delay={CASCADE.railBottom * REVEAL_STAGGER}>Client:</HomeReveal></span>
+            <span className="t-ui" style={valueInk}><HomeReveal key={href} delay={(CASCADE.railBottom + 1) * REVEAL_STAGGER}>{project.client}</HomeReveal></span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span className="t-ui" style={labelMuted}><HomeReveal delay={2 * REVEAL_STAGGER}>Role:</HomeReveal></span>
-            <span className="t-ui" style={valueInk}><HomeReveal key={href} delay={3 * REVEAL_STAGGER}>{project.role}</HomeReveal></span>
+            <span className="t-ui" style={labelMuted}><HomeReveal delay={(CASCADE.railBottom + 2) * REVEAL_STAGGER}>Role:</HomeReveal></span>
+            <span className="t-ui" style={valueInk}><HomeReveal key={href} delay={(CASCADE.railBottom + 3) * REVEAL_STAGGER}>{project.role}</HomeReveal></span>
           </div>
         </div>
-        <a className="t-ui" href={href} style={{ ...valueInk, textDecoration: "none" }}><HomeReveal delay={4 * REVEAL_STAGGER}>View Detail</HomeReveal></a>
+        <a className="t-ui" href={href} style={{ ...valueInk, textDecoration: "none" }}><HomeReveal delay={(CASCADE.railBottom + 4) * REVEAL_STAGGER}>View Detail</HomeReveal></a>
       </div>
 
       {/* geometric primitives — exported SVG (circle + triangle), fills the

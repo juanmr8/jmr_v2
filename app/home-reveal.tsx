@@ -17,13 +17,28 @@
    open (see reveal-gate.tsx). An explicit `play` prop overrides it.
 ════════════════════════════════════════════════════════════ */
 
+import { useRef } from "react";
 import { useReducedMotion } from "motion/react";
 import { ParagraphReveal, type ParagraphRevealProps } from "./animations/paragraph-reveal";
 import { useRevealGate } from "./reveal-gate";
 
 export const REVEAL_DURATION = 0.7;
-export const REVEAL_STAGGER = 0.08;
+/** Per-slot step of the small-tier cascade. Tighter than the Intro's 0.08:
+    the tier is ONE 17-slot sweep (see CASCADE), and this keeps its full
+    span of departures ≈ 0.8s so the statement still clearly follows. */
+export const REVEAL_STAGGER = 0.05;
 export const REVEAL_EASE = [0.165, 0.84, 0.44, 1];
+
+/** Small-tier cascade: one GLOBAL slot sequence sweeping the page top to
+    bottom — nav → rail top → status → rail bottom. Each region's items
+    continue from the previous region's last slot, so the tier reads as a
+    single stagger, never four parallel ones. delay = slot × REVEAL_STAGGER. */
+export const CASCADE = {
+  nav: 0, //         logo · Work · About · Lab · Contact          → 0–4
+  railTop: 5, //     Services: · Design, Development · IG · Medium → 5–8
+  status: 9, //      Available for work · June '26 · Scroll        → 9–11
+  railBottom: 12, // Client: · value · Role: · value · View Detail → 12–16
+} as const;
 
 interface HomeRevealProps {
   children: string;
@@ -43,12 +58,18 @@ export function HomeReveal({ children, as = "span", className, delay = 0, play }
   const gate = useRevealGate();
   const resolved = play ?? gate;
 
+  // The delay choreographs the OPENING cascade only. A mount that finds the
+  // gate already open is a later re-rise (RailBottom's keyed Active values,
+  // Fast Refresh) — it plays immediately instead of waiting out its slot.
+  const openAtMount = useRef(gate);
+  const entranceDelay = openAtMount.current ? 0 : delay;
+
   return (
     <ParagraphReveal
       as={as}
       className={className}
       animate={resolved || !!reduce}
-      delay={reduce ? 0 : delay}
+      delay={reduce ? 0 : entranceDelay}
       duration={reduce ? 0 : REVEAL_DURATION}
       ease={REVEAL_EASE}
     >

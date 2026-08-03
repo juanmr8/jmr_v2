@@ -1,5 +1,5 @@
 import { px, colW } from "./home-grid";
-import { HomeReveal, REVEAL_STAGGER } from "./home-reveal";
+import { CASCADE, HomeReveal, REVEAL_STAGGER } from "./home-reveal";
 import { PHASE_STATEMENT } from "./reveal-gate";
 import { STATEMENT } from "./home-data";
 import { projects } from "@/app/projects/data";
@@ -21,7 +21,9 @@ export function MainTop() {
     // rule travels in from the screen's left edge and lands on this border.
     <div data-home-line="column" style={{ ...MAIN_COL, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) }}>
       <div style={{ position: "relative" }}>
-        <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal>↳</HomeReveal></span>
+        {/* The ↳ rises on the statement's beat, not in the small cascade —
+            it annotates the statement, so they arrive as one composition. */}
+        <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal delay={PHASE_STATEMENT}>↳</HomeReveal></span>
         {/* The statement's LINE animation: the reveal measures the wrapped
             lines and rises each from its own mask, staggered — phase two of
             the entrance, after the small text leads. Styling stays on the h1
@@ -34,10 +36,10 @@ export function MainTop() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: px(8) }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal>Available for work</HomeReveal></span>
-          <span className="t-ui" style={{ color: "var(--color-ink)" }}><HomeReveal delay={REVEAL_STAGGER}>June ‘26</HomeReveal></span>
+          <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal delay={CASCADE.status * REVEAL_STAGGER}>Available for work</HomeReveal></span>
+          <span className="t-ui" style={{ color: "var(--color-ink)" }}><HomeReveal delay={(CASCADE.status + 1) * REVEAL_STAGGER}>June ‘26</HomeReveal></span>
         </div>
-        <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal delay={2 * REVEAL_STAGGER}>Scroll</HomeReveal></span>
+        <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal delay={(CASCADE.status + 2) * REVEAL_STAGGER}>Scroll</HomeReveal></span>
       </div>
     </div>
   );
