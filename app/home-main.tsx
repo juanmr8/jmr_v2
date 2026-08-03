@@ -17,7 +17,9 @@ const GALLERY_ITEMS = projects.map((p) => ({ color: p.color, slug: p.slug, title
     The gap between the two is the main column's elastic constraint. */
 export function MainTop() {
   return (
-    <div style={{ ...MAIN_COL, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) }}>
+    // data-home-line: measured by the Preloader's lines layer — the vertical
+    // rule travels in from the screen's left edge and lands on this border.
+    <div data-home-line="column" style={{ ...MAIN_COL, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) }}>
       <div style={{ position: "relative" }}>
         <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal>↳</HomeReveal></span>
         {/* The statement's LINE animation: the reveal measures the wrapped

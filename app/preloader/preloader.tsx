@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildField, emergeProgress, outSpan, revealAt } from "./preloader-layout";
 import { PreloaderField } from "./preloader-field";
+import { PreloaderLines } from "./preloader-lines";
 import { RailShape } from "./shapes";
 import { PreloaderPlayer, usePlayerClock } from "./preloader-player";
 import { BLINK, COLOR, EMERGE, PLAYER, PORTAL } from "./preloader-presets";
@@ -82,6 +83,12 @@ export function Preloader({ onComplete }: { onComplete?: (complete: boolean) => 
           display: destroyed ? "none" : undefined,
         }}
       >
+        {/* The homepage frame, drawn in during the run: the top rule sweeps
+            across the main show; the vertical/mid rules travel in from the
+            screen edges. All three land exactly at portalStart — the frame is
+            standing the moment the heroes begin their slide-up. First in the
+            stage, so the field and the emergence render above the lines. */}
+        <PreloaderLines elapsed={clock.elapsed} end={portalStart} />
         <PreloaderField
           cells={cells}
           elapsed={clock.elapsed}

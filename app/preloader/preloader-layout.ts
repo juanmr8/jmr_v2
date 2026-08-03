@@ -1,4 +1,4 @@
-import { BLINK, EMERGE, FIELD, INTRO, OUT, PORTAL } from "./preloader-presets";
+import { BLINK, EMERGE, FIELD, INTRO, LINES, OUT, PORTAL } from "./preloader-presets";
 import type { ShapeKind } from "./shapes";
 
 /* ════════════════════════════════════════════════════════════
@@ -199,6 +199,29 @@ export function heroExit(hero: ShapeKind, t: number): number {
     and ease as the exits, so the two motions answer each other. */
 export function emergeProgress(shape: ShapeKind, t: number): number {
   return sharpOut((t - (shape === "triangle" ? EMERGE.stagger : 0)) / EMERGE.duration);
+}
+
+/** Smooth cubic ease-in-out — the top rule's sweep. It accompanies the
+    whole field show rather than answering the finale, so it breathes
+    (slow–fast–slow) instead of launching like sharpOut. */
+function smoothInOut(p: number): number {
+  const c = Math.min(1, Math.max(0, p));
+  return c < 0.5 ? 4 * c ** 3 : 1 - (-2 * c + 2) ** 3 / 2;
+}
+
+/** Eased 0→1 progress of the top rule's left→right sweep at `elapsed`:
+    departs at LINES.sweepDelay, completes exactly at `end` (the finale's
+    start, computed by the root). Pure in elapsed — scrubs like the rest. */
+export function sweepProgress(elapsed: number, end: number): number {
+  return smoothInOut((elapsed - LINES.sweepDelay) / (end - LINES.sweepDelay));
+}
+
+/** Eased 0→1 progress of a travelling rule (the vertical column rule /
+    the mid divider) at `elapsed`: departs LINES.travel before `end` and
+    lands exactly on it — the same sharp launch-and-settle as the finale
+    it hands off to. */
+export function lineTravel(elapsed: number, end: number): number {
+  return sharpOut((elapsed - (end - LINES.travel)) / LINES.travel);
 }
 
 /** The one visibility answer: is this cell showing at `elapsed` seconds

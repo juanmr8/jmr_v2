@@ -38,7 +38,9 @@ export function DesktopHome() {
       >
         <HomeNav />
 
-        <section style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
+        {/* data-home-line: measured by the Preloader's lines layer, which
+            re-draws this divider on the stage and lands it here before the cut. */}
+        <section data-home-line="divider" style={{ ...zone, borderBottom: "1px solid var(--color-line)" }}>
           <div className="container ds-grid" style={grid}>
             <RailTop />
             <MainTop />
