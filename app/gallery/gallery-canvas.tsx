@@ -61,11 +61,21 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
   // statement, then the Planes. Scrubbing the dev player back inside the wait
   // cancels it (cleanup). The at-mount-already-open case below skips the
   // phasing: no opening sequence, nothing to sequence against.
+  //
+  // The session-flag skip settles instead: no entrance, Planes home at once.
+  // Decided HERE, not at renderer creation — the flag is read in a layout
+  // effect after mount, and the creation effect can flush before that
+  // decision's re-render, so a creation-time read races it. settleHome()
+  // latches; the re-run after `instant` releases no-ops its startIntro.
   useEffect(() => {
     if (!revealed) return;
+    if (instant) {
+      rendererRef.current?.settleHome();
+      return;
+    }
     const id = window.setTimeout(() => rendererRef.current?.startIntro(), PHASE_GALLERY * 1000);
     return () => window.clearTimeout(id);
-  }, [revealed]);
+  }, [revealed, instant]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -75,7 +85,6 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
     const renderer = createGalleryRenderer({
       canvas,
       autoIntro: false, // the reveal gate owns the moment (open by default off-home)
-      skipIntro: instantRef.current, // session-flag skip: settle home, no entrance
       colors: items.map((it) => it.color),
       onActiveChange: (index) => onActiveChange.current(index),
       // Per-frame, no React re-render: write each Plane's live rect straight to
@@ -109,8 +118,11 @@ export function GalleryCanvas({ items }: GalleryCanvasProps) {
     sync();
     // Gate already open at mount (no opening sequence, or a remount after the
     // cut — e.g. Fast Refresh): start immediately; the [revealed] effect only
-    // fires on the flip.
-    if (revealedRef.current) renderer.startIntro();
+    // fires on the flip. Inside the instant window, settle instead.
+    if (revealedRef.current) {
+      if (instantRef.current) renderer.settleHome();
+      else renderer.startIntro();
+    }
 
     const observer = new ResizeObserver(sync);
     observer.observe(container);

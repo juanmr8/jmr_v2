@@ -80,10 +80,6 @@ export interface GalleryRendererOptions {
       startIntro() when the page is revealed (e.g. the Preloader's cut), so the
       entrance isn't spent unseen behind an overlay. */
   autoIntro?: boolean;
-  /** Skip the Intro outright: Planes start home, scroll unlocked from the
-      first frame — the session-flag skip (the visitor already saw the
-      opening this session). Mirrors the reduced-motion path. */
-  skipIntro?: boolean;
 }
 
 export interface GalleryRenderer {
@@ -95,6 +91,13 @@ export interface GalleryRenderer {
       With autoIntro:false this is the trigger; scroll stays locked until the
       Intro has played. */
   startIntro(): void;
+  /** Skip the Intro outright: jump every Plane home and unlock scroll — the
+      session-flag skip (the visitor already saw the opening this session).
+      Mirrors the reduced-motion path. A method rather than a creation option
+      so the caller can decide AFTER mount: the skip flag lives in
+      sessionStorage, which is only readable client-side, after the renderer
+      effect may already have run. Idempotent; a later startIntro() no-ops. */
+  settleHome(): void;
   /** Stop the RAF loop and any running tween. The GL context is left intact so
       a re-mounted effect can reuse the same canvas (see destroy() body). */
   destroy(): void;
@@ -106,7 +109,6 @@ export function createGalleryRenderer({
   onActiveChange,
   onFrame,
   autoIntro = true,
-  skipIntro = false,
 }: GalleryRendererOptions): GalleryRenderer {
   const renderer = new Renderer({
     canvas,
@@ -145,22 +147,21 @@ export function createGalleryRenderer({
   let lastTime = 0;
 
   // ── Intro state. One entrance progress per Plane (0 = off-screen below-right,
-  // 1 = home), layered on the resting layout in draw(). Some Planes start home:
-  // under prefers-reduced-motion or skipIntro every Plane does (the Intro is
-  // skipped), and the leaver — the one Plane resting off-screen-left at offset 0
-  // (loopRank < 0) — always does, so it can't streak across the viewport
-  // mid-entrance.
+  // 1 = home), layered on the resting layout in draw(). Two Planes start home:
+  // under prefers-reduced-motion every Plane does (the Intro is skipped), and
+  // the leaver — the one Plane resting off-screen-left at offset 0 (loopRank < 0)
+  // — always does, so it can't streak across the viewport mid-entrance.
   const reduceMotion =
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const introProgress = colors.map((_, i) => {
     const offLeft = total > 1 && loopRank(i, total) < 0;
-    return { p: reduceMotion || skipIntro || offLeft ? 1 : 0 };
+    return { p: reduceMotion || offLeft ? 1 : 0 };
   });
   let introTween: gsap.core.Tween | null = null;
   let introArmed = autoIntro; // startIntro() arms it; the first real geometry fires it
-  let introStarted = skipIntro; // skipIntro: nothing to play — scroll unlocked at once
+  let introStarted = false;
 
   function draw(): void {
     // Bail if we have no geometry yet, or the GL context was lost (tab GPU
@@ -255,6 +256,16 @@ export function createGalleryRenderer({
     maybeStartIntro();
   }
 
+  function settleHome(): void {
+    introTween?.kill();
+    introTween = null;
+    introArmed = true;
+    introStarted = true; // nothing to play — scroll unlocked at once
+    introProgress.forEach((o) => (o.p = 1));
+    mode = "idle";
+    draw(); // no-op until geometry lands; the first resize() then draws home
+  }
+
   function tick(now: number): void {
     const dt = Math.min((now - lastTime) / 1000, 1 / 30); // clamp long stalls
     lastTime = now;
@@ -314,5 +325,5 @@ export function createGalleryRenderer({
     // actually own and stop here.
   }
 
-  return { resize, input, startIntro, destroy };
+  return { resize, input, startIntro, settleHome, destroy };
 }
