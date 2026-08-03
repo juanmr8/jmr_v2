@@ -196,8 +196,10 @@ export const LINES = {
       INTRO.hold so it departs the instant the Hero Pair pops in. */
   sweepDelay: 0.2,
   /** Seconds the vertical/mid rules spend travelling, measured from the
-      finale's start. The timeline holds until they've landed. */
-  travel: 0.9,
+      finale's start. Matched to the emergence's full span (EMERGE.stagger
+      + duration ≈ 1.32) so the lines land with the triangle's rise. The
+      timeline holds until they've landed. */
+  travel: 1.3,
 } as const;
 
 /** Dev-only: the transport bar for art-directing the Preloader —
