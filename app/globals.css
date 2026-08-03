@@ -242,6 +242,14 @@ html {
   background:  var(--color-bg);
   color:       var(--color-ink);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+
+  /* No visible scrollbar, ever — the home is a locked single screen and
+     the scrolling surfaces (project detail) are art-directed without one.
+     Scrolling itself still works; only the bar is hidden. */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
 }
 
 /* ════════════════════════════════════════════════════════════
