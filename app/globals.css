@@ -271,3 +271,17 @@ html {
   text-decoration: underline;
   text-underline-offset: calc(var(--vw) * 3);
 }
+
+/* ════════════════════════════════════════════════════════════
+   HOME REVEAL  ·  statement indent continuity
+   ─────────────────────────────────────────────────────────
+   The h1's text-indent shapes only its FIRST line (the ↳ marker
+   sits in that indent). The reveal's ghost is one wrapped block, so
+   it indents natively — but each animated line is its own block and
+   would ALL inherit the indent. Zero it on every line but the first.
+   (.absolute is the reveal's animated layer; its children are the
+   per-line masks.)
+════════════════════════════════════════════════════════════ */
+.reveal-statement .absolute > span:not(:first-child) {
+  text-indent: 0;
+}

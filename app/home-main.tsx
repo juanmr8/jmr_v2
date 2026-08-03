@@ -19,8 +19,13 @@ export function MainTop() {
     <div style={{ ...MAIN_COL, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) }}>
       <div style={{ position: "relative" }}>
         <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal>↳</HomeReveal></span>
-        {/* statement stays static for now — its line animation is a follow-up */}
-        <h1 className="t-statement" style={{ color: "var(--color-ink)", textIndent: colW(1) }}>{STATEMENT}</h1>
+        {/* The statement's LINE animation: the reveal measures the wrapped
+            lines and rises each from its own mask, staggered. Styling stays on
+            the h1 (the reveal inherits it); .reveal-statement scopes the
+            text-indent to the first line only (globals.css). */}
+        <h1 className="t-statement" style={{ color: "var(--color-ink)", textIndent: colW(1) }}>
+          <HomeReveal className="reveal-statement">{STATEMENT}</HomeReveal>
+        </h1>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: px(8) }}>
