@@ -197,8 +197,10 @@ export const LINES = {
   sweepDelay: 0.2,
   /** Seconds the vertical/mid rules spend travelling, measured from the
       finale's start. The timeline holds until they've landed, so this is
-      also the finale's minimum length. */
-  travel: 1.3,
+      also the finale's minimum length — kept level with the portal exit's
+      end (PORTAL.stagger + PORTAL.duration ≈ 0.97) so the cut, and with it
+      the text/Gallery entrances, follows the shapes without a dead beat. */
+  travel: 1.0,
 } as const;
 
 /** Dev-only: the transport bar for art-directing the Preloader —
