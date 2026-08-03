@@ -257,3 +257,17 @@ html {
   grid-template-columns: repeat(var(--col-l), var(--col));
   column-gap: var(--gutter);
 }
+
+/* ════════════════════════════════════════════════════════════
+   HOME REVEAL  ·  underline continuity
+   ─────────────────────────────────────────────────────────
+   text-decoration doesn't propagate into out-of-flow children,
+   so an underlined label loses it on ParagraphReveal's absolutely
+   positioned animated layer. This re-applies it to every span in
+   the reveal (ghost + sr-only copies are hidden, so no doubling).
+   Offset matches the menu's px(3).
+════════════════════════════════════════════════════════════ */
+.reveal-underline span {
+  text-decoration: underline;
+  text-underline-offset: calc(var(--vw) * 3);
+}

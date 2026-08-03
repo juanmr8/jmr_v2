@@ -1,4 +1,5 @@
 import { px, colW } from "./home-grid";
+import { HomeReveal, REVEAL_STAGGER } from "./home-reveal";
 import { STATEMENT } from "./home-data";
 import { projects } from "@/app/projects/data";
 import { GalleryCanvas } from "./gallery/gallery-canvas";
@@ -17,16 +18,17 @@ export function MainTop() {
   return (
     <div style={{ ...MAIN_COL, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingBlock: px(16) }}>
       <div style={{ position: "relative" }}>
-        <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}>↳</span>
+        <span className="t-ui" style={{ position: "absolute", left: 0, top: 0, lineHeight: 1.4, color: "var(--color-ink)" }}><HomeReveal>↳</HomeReveal></span>
+        {/* statement stays static for now — its line animation is a follow-up */}
         <h1 className="t-statement" style={{ color: "var(--color-ink)", textIndent: colW(1) }}>{STATEMENT}</h1>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: px(8) }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span className="t-ui" style={{ color: "var(--color-muted)" }}>Available for work</span>
-          <span className="t-ui" style={{ color: "var(--color-ink)" }}>June ‘26</span>
+          <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal>Available for work</HomeReveal></span>
+          <span className="t-ui" style={{ color: "var(--color-ink)" }}><HomeReveal delay={REVEAL_STAGGER}>June ‘26</HomeReveal></span>
         </div>
-        <span className="t-ui" style={{ color: "var(--color-muted)" }}>Scroll</span>
+        <span className="t-ui" style={{ color: "var(--color-muted)" }}><HomeReveal delay={2 * REVEAL_STAGGER}>Scroll</HomeReveal></span>
       </div>
     </div>
   );

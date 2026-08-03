@@ -4,7 +4,7 @@ import { SiteMenuBar } from "./menu";
 export function HomeNav() {
   return (
     <div style={{ borderBottom: "1px solid var(--color-line)" }}>
-      <SiteMenuBar />
+      <SiteMenuBar reveal />
     </div>
   );
 }
