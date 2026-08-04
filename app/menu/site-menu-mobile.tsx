@@ -26,9 +26,15 @@ export function SiteMenuMobileTop() {
 export function SiteMenuMobileSections({ className = "" }: { className?: string }) {
   return (
     <nav className={`pointer-events-auto flex flex-col gap-1 text-xs text-white ${className}`}>
-      {MOBILE_SECTIONS.map((s) => (
-        <span key={s.label}>{s.label}</span>
-      ))}
+      {MOBILE_SECTIONS.map((s) =>
+        s.href ? (
+          <Link key={s.label} href={s.href} className="text-white no-underline">
+            {s.label}
+          </Link>
+        ) : (
+          <span key={s.label}>{s.label}</span>
+        )
+      )}
     </nav>
   );
 }
