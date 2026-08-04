@@ -35,3 +35,17 @@ _Avoid_: Intro (reserved for the Gallery), splash, loader (implies load-gating)
 **Hero Pair**:
 The circle and triangle that appear in the bottom-left rail as the Preloader's center pair exits — the resting geometric primitives of the home page. A distinct pair from the center shapes: the center pair exits upward into its mask; the Hero Pair appears in place in the corner.
 _Avoid_: Logo, mark
+
+## Lab
+
+**Lab**:
+The site's experiments section (`/lab`): a full-page field a visitor pans freely toward all four corners, wrapping seamlessly — no edge, no reset. Distinct from the Gallery (the home's project strip).
+_Avoid_: Playground, archive
+
+**Piece**:
+One work shown in the Lab — a plane in the field, linked (later) to its own detail route. The Lab's counterpart to the Gallery's Project.
+_Avoid_: Project (reserved for Work), item, tile
+
+**Cluster**:
+The single hand-placed arrangement of Pieces that tiles the Lab's infinite field in both axes. Each Piece is placed once, in Cluster coordinates (design units); the layout repeats the whole Cluster, so adding a Piece is a data change, never a layout change.
+_Avoid_: Grid, tile (as a noun for the arrangement), page
