@@ -59,8 +59,8 @@ const MAX_FLING = 4000;
    STRENGTH_SMOOTH: per-frame lerp toward the live velocity — the warp eases in
                     and relaxes instead of jittering with the pointer. */
 const CAMERA_Z = 1200;
-const BEND = 0.4;
-const DRAG_BOOST = 2.8;
+const BEND = 0.55;
+const DRAG_BOOST = 4.5;
 const STRENGTH_SMOOTH = 0.15;
 /** Loop keeps running below this residual strength is treated as flat. */
 const STRENGTH_REST = 0.002;

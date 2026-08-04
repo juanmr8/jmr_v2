@@ -56,7 +56,7 @@ export const labFragment = /* glsl */ `
   varying vec2 vUv;
 
   #define ABERR_THRESHOLD 0.006
-  #define ABERR_SCALE 0.275
+  #define ABERR_SCALE 0.42
 
   void main() {
     if (uHasTexture < 0.5) {
