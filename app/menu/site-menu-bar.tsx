@@ -16,8 +16,17 @@ import { BRAND, NAV_LINKS, CONTACT } from "./menu-data";
  *
  * `reveal` turns on the homepage entrance: each label rises inside its own
  * mask, cascading left-to-right. Every other surface renders plain text.
+ *
+ * `activeLabel` names the section this surface belongs to — it reads in ink,
+ * the rest in muted. Defaults to Work (the home gallery and its details).
  */
-export function SiteMenuBar({ reveal = false }: { reveal?: boolean }) {
+export function SiteMenuBar({
+  reveal = false,
+  activeLabel = "Work",
+}: {
+  reveal?: boolean;
+  activeLabel?: string;
+}) {
   const label = (text: string, slot: number, className?: string) =>
     reveal ? (
       <HomeReveal delay={(CASCADE.nav + slot) * REVEAL_STAGGER} className={className}>
@@ -38,11 +47,23 @@ export function SiteMenuBar({ reveal = false }: { reveal?: boolean }) {
       </Link>
 
       <nav style={{ gridColumn: "4 / 10", display: "flex", gap: px(15), alignItems: "center" }}>
-        {NAV_LINKS.map((l, i) => (
-          <span key={l.label} className="t-ui" style={{ color: l.active ? "var(--color-ink)" : "var(--color-muted)" }}>
-            {label(l.label, i + 1)}
-          </span>
-        ))}
+        {NAV_LINKS.map((l, i) => {
+          const color = l.label === activeLabel ? "var(--color-ink)" : "var(--color-muted)";
+          return l.href ? (
+            <Link
+              key={l.label}
+              href={l.href}
+              className="t-ui pointer-events-auto"
+              style={{ color, textDecoration: "none" }}
+            >
+              {label(l.label, i + 1)}
+            </Link>
+          ) : (
+            <span key={l.label} className="t-ui" style={{ color }}>
+              {label(l.label, i + 1)}
+            </span>
+          );
+        })}
       </nav>
 
       <span
