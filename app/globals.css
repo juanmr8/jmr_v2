@@ -40,6 +40,17 @@
   }
 }
 
+/* Lab detail (AD-129): the drawer's slide-in and the scrim's fade, played on
+   mount (duration set inline from PANEL_MS). Exits are transitions on the
+   `closing` class — `backwards` fill hands the style back to the class the
+   moment the entry ends. */
+@keyframes lab-panel-in {
+  from { transform: translateX(100%); }
+}
+@keyframes lab-scrim-in {
+  from { opacity: 0; }
+}
+
 /* ════════════════════════════════════════════════════════════
    RESET
    margin/padding live in @layer base so Tailwind's layered
