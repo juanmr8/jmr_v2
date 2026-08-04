@@ -8,10 +8,17 @@
    scatter survives the fallback — derive, don't duplicate.
 ════════════════════════════════════════════════════════════ */
 
+import Link from "next/link";
 import { px } from "../home-grid";
-import { CLUSTER, LAB_PIECES, PLANE_COLOR } from "./lab-data";
+import { CLUSTER, LAB_PIECES, PLANE_COLOR, labPieceHref } from "./lab-data";
 
-export function LabGrid() {
+interface LabGridProps {
+  /** A piece link was followed — lets the shell mark the open as in-app so
+      closing the detail returns here via history. */
+  onOpen?: () => void;
+}
+
+export function LabGrid({ onOpen }: LabGridProps) {
   return (
     <ul
       style={{
@@ -32,23 +39,39 @@ export function LabGrid() {
             maxWidth: px(Math.min(piece.rect.w, 560)),
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- the canvas
-              surface loads these same raw paths into WebGL textures; the
-              fallback mirrors it 1:1 rather than re-encoding via next/image */}
-          <img
-            src={piece.image}
-            alt={piece.title}
-            loading="lazy"
-            style={{
-              width: "100%",
-              background: PLANE_COLOR,
-              aspectRatio: `${piece.rect.w} / ${piece.rect.h}`,
-              objectFit: "cover",
+          <Link
+            href={labPieceHref(piece.slug)}
+            // scroll={false}: "back/close returns to the gallery in place" —
+            // without it the push scrolls this document to the top and the
+            // grid loses its spot behind the panel.
+            scroll={false}
+            // Only an in-tab open is "in-app" (close = history back); a
+            // modified click opens a new tab and must not mark this one.
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+              onOpen?.();
             }}
-          />
-          <p className="t-ui" style={{ marginTop: px(8), color: "#6f6c66" }}>
-            {piece.title}
-          </p>
+            aria-label={`${piece.title} — open piece`}
+            style={{ display: "block", textDecoration: "none" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- the canvas
+                surface loads these same raw paths into WebGL textures; the
+                fallback mirrors it 1:1 rather than re-encoding via next/image */}
+            <img
+              src={piece.image}
+              alt={piece.title}
+              loading="lazy"
+              style={{
+                width: "100%",
+                background: PLANE_COLOR,
+                aspectRatio: `${piece.rect.w} / ${piece.rect.h}`,
+                objectFit: "cover",
+              }}
+            />
+            <p className="t-ui" style={{ marginTop: px(8), color: "#6f6c66" }}>
+              {piece.title}
+            </p>
+          </Link>
         </li>
       ))}
     </ul>

@@ -43,8 +43,12 @@ The site's experiments section (`/lab`): a full-page field a visitor pans freely
 _Avoid_: Playground, archive
 
 **Piece**:
-One work shown in the Lab — a plane in the field, linked (later) to its own detail route. The Lab's counterpart to the Gallery's Project.
+One work shown in the Lab — a plane in the field, linked to its own detail route (`/lab/[slug]`). The Lab's counterpart to the Gallery's Project.
 _Avoid_: Project (reserved for Work), item, tile
+
+**Panel**:
+A Piece's detail surface: a right-hand drawer that slides in over the dimmed Lab field when a Piece opens (its own route — the field stays in place behind it). Shows the Piece's title, description, and live link where they exist.
+_Avoid_: Modal, dialog, sidebar
 
 **Cluster**:
 The single hand-placed arrangement of Pieces that tiles the Lab's infinite field in both axes. Each Piece is placed once, in Cluster coordinates (design units); the layout repeats the whole Cluster, so adding a Piece is a data change, never a layout change.
