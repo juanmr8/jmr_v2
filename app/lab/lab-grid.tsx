@@ -32,11 +32,18 @@ export function LabGrid() {
             maxWidth: px(Math.min(piece.rect.w, 560)),
           }}
         >
-          <div
-            aria-label={piece.title}
+          {/* eslint-disable-next-line @next/next/no-img-element -- the canvas
+              surface loads these same raw paths into WebGL textures; the
+              fallback mirrors it 1:1 rather than re-encoding via next/image */}
+          <img
+            src={piece.image}
+            alt={piece.title}
+            loading="lazy"
             style={{
+              width: "100%",
               background: PLANE_COLOR,
               aspectRatio: `${piece.rect.w} / ${piece.rect.h}`,
+              objectFit: "cover",
             }}
           />
           <p className="t-ui" style={{ marginTop: px(8), color: "#6f6c66" }}>

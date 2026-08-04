@@ -25,7 +25,7 @@ export function LabCanvas() {
 
     const renderer = createLabRenderer({
       canvas,
-      pieces: LAB_PIECES.map((p) => p.rect),
+      pieces: LAB_PIECES.map((p) => ({ rect: p.rect, image: p.image })),
       cluster: CLUSTER,
       color: PLANE_COLOR,
     });
