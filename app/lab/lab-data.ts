@@ -20,9 +20,19 @@ export interface LabPiece {
   slug: string; // URL segment for the piece's detail route (AD-129)
   title: string; // display name
   image: string; // public path — the plane's texture (cover-cropped)
+  description?: string; // detail-panel copy, where it exists
   live?: string; // external live link, where one exists
   /** Placement inside the Cluster — top-left origin, +y down, design units. */
   rect: { x: number; y: number; w: number; h: number };
+}
+
+/** The piece's detail route (AD-129). */
+export function labPieceHref(slug: string): string {
+  return `/lab/${slug}`;
+}
+
+export function getLabPiece(slug: string): LabPiece | undefined {
+  return LAB_PIECES.find((p) => p.slug === slug);
 }
 
 /* Seeded with the posters in the repo, filled out with project frames to
