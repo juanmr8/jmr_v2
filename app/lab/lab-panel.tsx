@@ -58,21 +58,23 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           <div className="mt-[1.15rem] flex gap-[0.5rem]">
             {piece.live && (
               <a
-                className="t-ui underline underline-offset-[3px]"
+                className="t-ui flex items-center gap-[0.5rem] underline underline-offset-[3px]"
                 href={piece.live}
                 target="_blank"
                 rel="noreferrer"
               >
+                <span aria-hidden className="size-[1em] rounded-full bg-current" />
                 Visit live
               </a>
             )}
             {piece.code && (
               <a
-                className="t-ui underline underline-offset-[3px]"
+                className="t-ui flex items-center gap-[0.5rem] underline underline-offset-[3px]"
                 href={piece.code}
                 target="_blank"
                 rel="noreferrer"
               >
+                <span aria-hidden className="size-[1em] rounded-full bg-current" />
                 View code
               </a>
             )}
