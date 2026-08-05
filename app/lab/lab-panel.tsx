@@ -10,8 +10,9 @@
    class transition, timed by the shell to PANEL_MS so navigation
    fires exactly as the drawer finishes leaving. Reduced motion
    drops both — the drawer just appears and disappears.
-   Shows what the piece has: title always, description and live
-   link only where they exist.
+   Shows what the piece has: title always, then a flex row of its
+   external links (live / code), the description, and the capture
+   loop autoplaying — each only where it exists.
 ════════════════════════════════════════════════════════════ */
 
 import { labPieceVideo, PLANE_COLOR, type LabPiece } from "./lab-data";
@@ -49,7 +50,38 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           Close
         </button>
 
-        <h1 className="t-ui m-0 mt-[4.5rem]">{piece.title}</h1>
+        <h1 className="t-subhead m-0 mt-[4.5rem]">{piece.title}</h1>
+
+        {(piece.live || piece.code) && (
+          <div className="mt-[1.15rem] flex gap-[1.5rem]">
+            {piece.live && (
+              <a
+                className="t-ui underline underline-offset-[3px]"
+                href={piece.live}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Visit live
+              </a>
+            )}
+            {piece.code && (
+              <a
+                className="t-ui underline underline-offset-[3px]"
+                href={piece.code}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View code
+              </a>
+            )}
+          </div>
+        )}
+
+        {piece.description && (
+          <p className="t-ui m-0 mt-[1.15rem] max-w-[36ch] text-[#6f6c66]">
+            {piece.description}
+          </p>
+        )}
 
         {video && (
           <video
@@ -61,34 +93,6 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
             loop
             playsInline
           />
-        )}
-
-        {piece.description && (
-          <p className="t-ui m-0 mt-[1.15rem] max-w-[36ch] text-[#6f6c66]">
-            {piece.description}
-          </p>
-        )}
-
-        {piece.live && (
-          <a
-            className="t-ui mt-[1.15rem] self-start underline underline-offset-[3px]"
-            href={piece.live}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Visit live ↗
-          </a>
-        )}
-
-        {piece.code && (
-          <a
-            className="t-ui mt-[1.15rem] self-start underline underline-offset-[3px]"
-            href={piece.code}
-            target="_blank"
-            rel="noreferrer"
-          >
-            View code ↗
-          </a>
         )}
       </div>
     </aside>
