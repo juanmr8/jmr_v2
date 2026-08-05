@@ -1,7 +1,13 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { CLUSTER, LAB_PIECES, getLabPiece, labPieceHref } from "./lab-data";
+import {
+  CLUSTER,
+  LAB_PIECES,
+  getLabPiece,
+  labPieceHref,
+  labPieceVideo,
+} from "./lab-data";
 
 describe("labPieceHref", () => {
   it("routes a slug under /lab", () => {
@@ -68,6 +74,21 @@ describe("LAB_PIECES", () => {
     for (const piece of LAB_PIECES) {
       const file = join(__dirname, "../../public", piece.image);
       expect(existsSync(file), `${piece.slug} → ${piece.image}`).toBe(true);
+    }
+  });
+});
+
+describe("labPieceVideo", () => {
+  it("every capture's derived loop exists under public/; posters have none", () => {
+    for (const piece of LAB_PIECES) {
+      const video = labPieceVideo(piece);
+      if (piece.image.startsWith("/lab/")) {
+        expect(video, piece.slug).toBeDefined();
+        const file = join(__dirname, "../../public", video!);
+        expect(existsSync(file), `${piece.slug} → ${video}`).toBe(true);
+      } else {
+        expect(video, piece.slug).toBeUndefined();
+      }
     }
   });
 });

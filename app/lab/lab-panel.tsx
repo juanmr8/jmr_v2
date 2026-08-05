@@ -14,7 +14,7 @@
    link only where they exist.
 ════════════════════════════════════════════════════════════ */
 
-import type { LabPiece } from "./lab-data";
+import { labPieceVideo, PLANE_COLOR, type LabPiece } from "./lab-data";
 import { PANEL_MS, useLabNav } from "./lab-nav";
 import { SHELL_BG } from "./lab-shell";
 
@@ -22,6 +22,7 @@ const EASE = "cubic-bezier(0.33, 1, 0.68, 1)"; // easeOutCubic — the Lab's set
 
 export function LabPanel({ piece }: { piece: LabPiece }) {
   const { closing, requestClose } = useLabNav();
+  const video = labPieceVideo(piece);
 
   return (
     <aside
@@ -49,6 +50,18 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
         </button>
 
         <h1 className="t-ui m-0 mt-[4.5rem]">{piece.title}</h1>
+
+        {video && (
+          <video
+            className="mt-[2rem] max-h-[55vh] max-w-full self-start"
+            style={{ background: PLANE_COLOR }}
+            src={video}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
 
         {piece.description && (
           <p className="t-ui m-0 mt-[1.15rem] max-w-[36ch] text-[#6f6c66]">
