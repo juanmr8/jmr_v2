@@ -79,6 +79,17 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
             Visit live ↗
           </a>
         )}
+
+        {piece.code && (
+          <a
+            className="t-ui mt-[1.15rem] self-start underline underline-offset-[3px]"
+            href={piece.code}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View code ↗
+          </a>
+        )}
       </div>
     </aside>
   );

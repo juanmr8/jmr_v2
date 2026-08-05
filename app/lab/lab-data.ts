@@ -23,6 +23,7 @@ export interface LabPiece {
   image: string; // public path — the plane's texture (cover-cropped)
   description?: string; // detail-panel copy, where it exists
   live?: string; // external live link, where one exists
+  code?: string; // public GitHub repo, where one exists
   /** Placement inside the Cluster — top-left origin, +y down, design units. */
   rect: { x: number; y: number; w: number; h: number };
 }
@@ -65,6 +66,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/01-on-load-basic/image.png",
     description:
       "On-load timeline animation — staggered entrance choreography built with Motion.",
+    code: "https://github.com/juanmr8/01-timeline-animation-motion",
     rect: { x: 560, y: 70, w: 460, h: 260 },
   },
   {
@@ -73,6 +75,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/13-text-superposition/image.png",
     description: "Jittering type superposition, React + Motion.",
     live: "https://www.instagram.com/p/DTIMLj7idQn/",
+    code: "https://github.com/juanmr8/13-text-superposition",
     rect: { x: 1160, y: 140, w: 270, h: 480 },
   },
   {
@@ -82,6 +85,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "Page-transition study with the View Transition API in the Next.js App Router.",
     live: "https://www.juanmoraromero.com/lab/05-page-transition-basic",
+    code: "https://github.com/juanmr8/05-page-transition-basic",
     rect: { x: 1570, y: 60, w: 440, h: 230 },
   },
   {
@@ -90,6 +94,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/17-mouse-image-gallery/image.png",
     description: "Mouse-position image gallery, React + vanilla JS.",
     live: "https://www.instagram.com/p/DTkVmmPiGbN/",
+    code: "https://github.com/juanmr8/17-mouse-image-gallery",
     rect: { x: 2150, y: 120, w: 280, h: 500 },
   },
   {
@@ -104,6 +109,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/07-stairs-page-transition/image.png",
     description: "Stairs page transition — GSAP with the Next.js App Router.",
     live: "https://www.juanmoraromero.com/lab/07-stairs-page-transition",
+    code: "https://github.com/juanmr8/07-stairs-page-transition",
     rect: { x: 3030, y: 130, w: 470, h: 240 },
   },
   {
@@ -114,6 +120,7 @@ export const LAB_PIECES: LabPiece[] = [
       "Scroll-driven animation study replicating telescope.fyi — React + Motion.",
     // The old site routes this piece as 02-on-scroll-basic — not a slug typo.
     live: "https://www.juanmoraromero.com/lab/02-on-scroll-basic",
+    code: "https://github.com/juanmr8/02-scroll-animation",
     rect: { x: 100, y: 680, w: 480, h: 250 },
   },
   {
@@ -122,6 +129,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/19-pixelated-image/image.png",
     description: "Hover pixelation shader, R3F + GLSL.",
     live: "https://www.instagram.com/p/DTqDfAZCEf5/",
+    code: "https://github.com/juanmr8/19-pixelated-image",
     rect: { x: 700, y: 480, w: 260, h: 460 },
   },
   {
@@ -138,6 +146,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/08-pixel-transition/image.png",
     description: "Pixelated page transition — React, Next.js and GSAP.",
     live: "https://www.juanmoraromero.com/lab/08-pixel-transition",
+    code: "https://github.com/juanmr8/08-pixel-transition",
     rect: { x: 1520, y: 420, w: 460, h: 250 },
   },
   {
@@ -146,6 +155,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/21-2d-physics/image.png",
     description: "Matter.js physics playground, React.",
     live: "https://www.instagram.com/p/DTu525vCIEk/",
+    code: "https://github.com/juanmr8/21-2d-physics",
     rect: { x: 2080, y: 740, w: 270, h: 480 },
   },
   {
@@ -155,6 +165,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "SVG path animation study — line draws and hand-drawn annotations, React + Motion.",
     live: "https://www.juanmoraromero.com/lab/04-svg-animation-basic",
+    code: "https://github.com/juanmr8/04-svg-animation-basic",
     rect: { x: 2490, y: 640, w: 450, h: 240 },
   },
   {
@@ -171,6 +182,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/14-text-gradient/image.png",
     description: "Text gradient reveal, GSAP + Motion versions.",
     live: "https://www.instagram.com/p/DTNtLHQCMT5/",
+    code: "https://github.com/juanmr8/14-text-gradient",
     rect: { x: 140, y: 1050, w: 260, h: 470 },
   },
   {
@@ -180,6 +192,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "Advanced text scramble on a dark editorial layout — GSAP, React, Next.js.",
     live: "https://www.juanmoraromero.com/lab/09-text-scramble",
+    code: "https://github.com/juanmr8/09-text-scramble",
     rect: { x: 520, y: 1080, w: 470, h: 250 },
   },
   {
@@ -194,6 +207,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/16-text-mask-blend-mode/image.png",
     description: "Text over video with blend modes, React + Motion.",
     live: "https://www.instagram.com/p/DTh2qVLCClD/",
+    code: "https://github.com/juanmr8/16-text-mask-blend-mode",
     rect: { x: 1600, y: 800, w: 270, h: 480 },
   },
   {
@@ -203,6 +217,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "Bottom-of-viewport blur with moving noise, activated on scroll — React, Motion, CSS.",
     live: "https://www.juanmoraromero.com/lab/06-on-scroll-blur",
+    code: "https://github.com/juanmr8/06-on-scroll-blur",
     rect: { x: 2010, y: 1350, w: 450, h: 240 },
   },
   {
@@ -211,6 +226,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/23-video-on-scroll/image.png",
     description: "Scroll-scrubbed video, React + Motion.",
     live: "https://www.instagram.com/p/DT0VV_aCI4B/",
+    code: "https://github.com/juanmr8/23-video-on-scroll",
     rect: { x: 2560, y: 1010, w: 280, h: 500 },
   },
   {
@@ -219,6 +235,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/12-svg-mask/image.png",
     description: "SVG mask animation studies, React + Motion.",
     live: "https://www.instagram.com/p/DTF6HanCfRb/",
+    code: "https://github.com/juanmr8/12-svg-mask",
     rect: { x: 3000, y: 1130, w: 280, h: 500 },
   },
   {
@@ -227,6 +244,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/03-mouse-move-basic/image.png",
     description: "Cursor-following lens study over an image grid — GSAP + React.",
     live: "https://www.juanmoraromero.com/lab/03-mouse-move-basic",
+    code: "https://github.com/juanmr8/03-mouse-move-basic",
     rect: { x: 90, y: 1650, w: 460, h: 240 },
   },
   {
@@ -235,6 +253,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/20-infinite-scroll/image.png",
     description: "Infinite scrolling gallery, React + vanilla JS.",
     live: "https://www.instagram.com/p/DTs4PS2iBRG/",
+    code: "https://github.com/juanmr8/20-infinite-scroll",
     rect: { x: 680, y: 1450, w: 270, h: 480 },
   },
   {
@@ -243,6 +262,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/10-interactive-buttons/image.png",
     description: "Four interactive button studies recreated in Tailwind + React.",
     live: "https://www.juanmoraromero.com/lab/10-interactive-buttons",
+    code: "https://github.com/juanmr8/10-interactive-buttons",
     rect: { x: 1090, y: 1790, w: 450, h: 240 },
   },
   {
@@ -252,6 +272,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "Metaballs in three phases (CSS / Canvas SDF / WebGL), React + Three.js.",
     live: "https://www.instagram.com/p/DTxwr7aiJfk/",
+    code: "https://github.com/juanmr8/22-gooey-effect",
     rect: { x: 1680, y: 1420, w: 280, h: 500 },
   },
   {
@@ -268,6 +289,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/15-text-mask-split/image.png",
     description: "Split text mask, side + scroll variants, React + Motion.",
     live: "https://www.instagram.com/p/DTfTT2zCLAZ/",
+    code: "https://github.com/juanmr8/15-text-mask-split",
     rect: { x: 2530, y: 1650, w: 260, h: 470 },
   },
   {
@@ -277,6 +299,7 @@ export const LAB_PIECES: LabPiece[] = [
     description:
       "Pixel shader with mouse interaction + colour-channel splitting, R3F + GLSL.",
     live: "https://www.instagram.com/p/DT2_kjtiNnr/",
+    code: "https://github.com/juanmr8/24-pixel-shader",
     rect: { x: 2950, y: 1770, w: 280, h: 500 },
   },
   {
@@ -285,6 +308,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/18-scroll-stacked-cards/image.png",
     description: "Scroll-stacked cards + SVG path draw, React + Motion.",
     live: "https://www.instagram.com/p/DTnwe8hiK-i/",
+    code: "https://github.com/juanmr8/18-scroll-stacked-cards",
     rect: { x: 430, y: 2050, w: 270, h: 480 },
   },
 ];
