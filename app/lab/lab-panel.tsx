@@ -50,7 +50,9 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           Close
         </button>
 
-        <h1 className="t-subhead m-0 mt-[4.5rem]">{piece.title}</h1>
+        <h1 className="t-heading m-0 mt-[4.5rem]">{piece.title}</h1>
+
+        <hr className="m-0 mt-[1.15rem] w-full border-0 border-t border-[#141414]/15" />
 
         {(piece.live || piece.code) && (
           <div className="mt-[1.15rem] flex gap-[1.5rem]">
