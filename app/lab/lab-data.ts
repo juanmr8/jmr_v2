@@ -32,6 +32,14 @@ export function labPieceHref(slug: string): string {
   return `/lab/${slug}`;
 }
 
+/** The piece's capture loop, shown autoplaying in the detail panel. Every
+    capture under public/lab/ ships a sibling video.mp4 next to its image
+    (AD-125), so the path is derived, not stored; posters have no loop. */
+export function labPieceVideo(piece: LabPiece): string | undefined {
+  if (!piece.image.startsWith("/lab/")) return undefined;
+  return piece.image.replace(/\/[^/]+$/, "/video.mp4");
+}
+
 export function getLabPiece(slug: string): LabPiece | undefined {
   return LAB_PIECES.find((p) => p.slug === slug);
 }
@@ -64,6 +72,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Text superposition",
     image: "/lab/13-text-superposition/image.png",
     description: "Jittering type superposition, React + Motion.",
+    live: "https://www.instagram.com/p/DTIMLj7idQn/",
     rect: { x: 1160, y: 140, w: 270, h: 480 },
   },
   {
@@ -80,6 +89,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Mouse image gallery",
     image: "/lab/17-mouse-image-gallery/image.png",
     description: "Mouse-position image gallery, React + vanilla JS.",
+    live: "https://www.instagram.com/p/DTkVmmPiGbN/",
     rect: { x: 2150, y: 120, w: 280, h: 500 },
   },
   {
@@ -111,6 +121,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Pixel shader on hover",
     image: "/lab/19-pixelated-image/image.png",
     description: "Hover pixelation shader, R3F + GLSL.",
+    live: "https://www.instagram.com/p/DTqDfAZCEf5/",
     rect: { x: 700, y: 480, w: 260, h: 460 },
   },
   {
@@ -118,6 +129,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Perlin Meatball",
     image: "/lab/perlin-meatball/image.png",
     description: "Perlin-displaced sphere, Cinema 4D + Octane.",
+    live: "https://www.instagram.com/p/C0sbpx-pw4I/",
     rect: { x: 1080, y: 760, w: 300, h: 300 },
   },
   {
@@ -133,6 +145,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "2D physics",
     image: "/lab/21-2d-physics/image.png",
     description: "Matter.js physics playground, React.",
+    live: "https://www.instagram.com/p/DTu525vCIEk/",
     rect: { x: 2080, y: 740, w: 270, h: 480 },
   },
   {
@@ -149,6 +162,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "LOOPS",
     image: "/lab/loops-poster/image.png",
     description: "Geometric motion poster, design piece.",
+    live: "https://www.instagram.com/p/C64nmQcpgml/",
     rect: { x: 3090, y: 490, w: 290, h: 520 },
   },
   {
@@ -156,6 +170,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Text gradient",
     image: "/lab/14-text-gradient/image.png",
     description: "Text gradient reveal, GSAP + Motion versions.",
+    live: "https://www.instagram.com/p/DTNtLHQCMT5/",
     rect: { x: 140, y: 1050, w: 260, h: 470 },
   },
   {
@@ -178,6 +193,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Text mask blend",
     image: "/lab/16-text-mask-blend-mode/image.png",
     description: "Text over video with blend modes, React + Motion.",
+    live: "https://www.instagram.com/p/DTh2qVLCClD/",
     rect: { x: 1600, y: 800, w: 270, h: 480 },
   },
   {
@@ -194,6 +210,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Video on scroll",
     image: "/lab/23-video-on-scroll/image.png",
     description: "Scroll-scrubbed video, React + Motion.",
+    live: "https://www.instagram.com/p/DT0VV_aCI4B/",
     rect: { x: 2560, y: 1010, w: 280, h: 500 },
   },
   {
@@ -201,6 +218,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Masking practice",
     image: "/lab/12-svg-mask/image.png",
     description: "SVG mask animation studies, React + Motion.",
+    live: "https://www.instagram.com/p/DTF6HanCfRb/",
     rect: { x: 3000, y: 1130, w: 280, h: 500 },
   },
   {
@@ -216,6 +234,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Infinite gallery",
     image: "/lab/20-infinite-scroll/image.png",
     description: "Infinite scrolling gallery, React + vanilla JS.",
+    live: "https://www.instagram.com/p/DTs4PS2iBRG/",
     rect: { x: 680, y: 1450, w: 270, h: 480 },
   },
   {
@@ -232,6 +251,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/22-gooey-effect/image.png",
     description:
       "Metaballs in three phases (CSS / Canvas SDF / WebGL), React + Three.js.",
+    live: "https://www.instagram.com/p/DTxwr7aiJfk/",
     rect: { x: 1680, y: 1420, w: 280, h: 500 },
   },
   {
@@ -239,6 +259,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "JMR ident",
     image: "/lab/jmr-ident/image.png",
     description: "Animated name ident card, design piece.",
+    live: "https://www.instagram.com/p/DTDg0q9CSfK/",
     rect: { x: 2130, y: 1730, w: 260, h: 460 },
   },
   {
@@ -246,6 +267,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Text mask split",
     image: "/lab/15-text-mask-split/image.png",
     description: "Split text mask, side + scroll variants, React + Motion.",
+    live: "https://www.instagram.com/p/DTfTT2zCLAZ/",
     rect: { x: 2530, y: 1650, w: 260, h: 470 },
   },
   {
@@ -254,6 +276,7 @@ export const LAB_PIECES: LabPiece[] = [
     image: "/lab/24-pixel-shader/image.png",
     description:
       "Pixel shader with mouse interaction + colour-channel splitting, R3F + GLSL.",
+    live: "https://www.instagram.com/p/DT2_kjtiNnr/",
     rect: { x: 2950, y: 1770, w: 280, h: 500 },
   },
   {
@@ -261,6 +284,7 @@ export const LAB_PIECES: LabPiece[] = [
     title: "Stacked cards",
     image: "/lab/18-scroll-stacked-cards/image.png",
     description: "Scroll-stacked cards + SVG path draw, React + Motion.",
+    live: "https://www.instagram.com/p/DTnwe8hiK-i/",
     rect: { x: 430, y: 2050, w: 270, h: 480 },
   },
 ];
