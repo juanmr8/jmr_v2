@@ -58,7 +58,7 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           <div className="mt-[1.15rem] flex gap-[0.5rem]">
             {piece.live && (
               <a
-                className="t-ui flex items-center gap-[0.5rem] underline underline-offset-[3px]"
+                className="t-ui flex items-center gap-[0.25rem] underline underline-offset-[3px]"
                 href={piece.live}
                 target="_blank"
                 rel="noreferrer"
@@ -69,12 +69,15 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
             )}
             {piece.code && (
               <a
-                className="t-ui flex items-center gap-[0.5rem] underline underline-offset-[3px]"
+                className="t-ui flex items-center gap-[0.25rem] underline underline-offset-[3px]"
                 href={piece.code}
                 target="_blank"
                 rel="noreferrer"
               >
-                <span aria-hidden className="size-[1em] rounded-full bg-current" />
+                <span
+                  aria-hidden
+                  className="size-[1em] bg-current [clip-path:polygon(0_0,0_100%,100%_50%)]"
+                />
                 View code
               </a>
             )}
