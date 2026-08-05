@@ -55,7 +55,7 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
         <hr className="m-0 mt-[1.15rem] w-full border-0 border-t border-[#141414]/15" />
 
         {(piece.live || piece.code) && (
-          <div className="mt-[1.15rem] flex gap-[0.5rem]">
+          <div className="mt-[1.15rem] flex gap-[1rem]">
             {piece.live && (
               <a
                 className="t-ui flex items-center gap-[0.25rem] underline underline-offset-[3px]"
@@ -76,7 +76,7 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
               >
                 <span
                   aria-hidden
-                  className="size-[1em] bg-current [clip-path:polygon(0_0,0_100%,100%_50%)]"
+                  className="size-[1em] bg-current [clip-path:polygon(50%_0,0_100%,100%_100%)]"
                 />
                 View code
               </a>
