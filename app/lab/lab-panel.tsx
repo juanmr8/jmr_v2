@@ -10,11 +10,12 @@
    class transition, timed by the shell to PANEL_MS so navigation
    fires exactly as the drawer finishes leaving. Reduced motion
    drops both — the drawer just appears and disappears.
-   Shows what the piece has: title always, description and live
-   link only where they exist.
+   Shows what the piece has: title always, then a flex row of its
+   external links (live / code), the description, and the capture
+   loop autoplaying — each only where it exists.
 ════════════════════════════════════════════════════════════ */
 
-import type { LabPiece } from "./lab-data";
+import { labPieceVideo, PLANE_COLOR, type LabPiece } from "./lab-data";
 import { PANEL_MS, useLabNav } from "./lab-nav";
 import { SHELL_BG } from "./lab-shell";
 
@@ -22,6 +23,7 @@ const EASE = "cubic-bezier(0.33, 1, 0.68, 1)"; // easeOutCubic — the Lab's set
 
 export function LabPanel({ piece }: { piece: LabPiece }) {
   const { closing, requestClose } = useLabNav();
+  const video = labPieceVideo(piece);
 
   return (
     <aside
@@ -48,7 +50,39 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           Close
         </button>
 
-        <h1 className="t-ui m-0 mt-[4.5rem]">{piece.title}</h1>
+        <h1 className="t-statement m-0 mt-[4.5rem]">{piece.title}</h1>
+
+        <hr className="m-0 mt-[1.15rem] w-full border-0 border-t border-[#141414]/15" />
+
+        {(piece.live || piece.code) && (
+          <div className="mt-[1.15rem] flex gap-[1rem]">
+            {piece.live && (
+              <a
+                className="t-ui flex items-center gap-[0.25rem] underline underline-offset-[3px]"
+                href={piece.live}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span aria-hidden className="size-[1em] rounded-full bg-current" />
+                Visit live
+              </a>
+            )}
+            {piece.code && (
+              <a
+                className="t-ui flex items-center gap-[0.25rem] underline underline-offset-[3px]"
+                href={piece.code}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span
+                  aria-hidden
+                  className="size-[1em] bg-current [clip-path:polygon(50%_0,0_100%,100%_100%)]"
+                />
+                View code
+              </a>
+            )}
+          </div>
+        )}
 
         {piece.description && (
           <p className="t-ui m-0 mt-[1.15rem] max-w-[36ch] text-[#6f6c66]">
@@ -56,15 +90,16 @@ export function LabPanel({ piece }: { piece: LabPiece }) {
           </p>
         )}
 
-        {piece.live && (
-          <a
-            className="t-ui mt-[1.15rem] self-start underline underline-offset-[3px]"
-            href={piece.live}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Visit live ↗
-          </a>
+        {video && (
+          <video
+            className="mt-[2rem] max-h-[55vh] max-w-full self-start"
+            style={{ background: PLANE_COLOR }}
+            src={video}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
         )}
       </div>
     </aside>
